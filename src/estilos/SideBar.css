@@ -1,0 +1,60 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100%;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: -250px; /* Ocultar inicialmente */
+    transition: left 0.3s ease;
+    padding: 15px;
+    z-index: 1000; /* Asegurarse de que esté por encima de otros elementos */
+}
+
+.sidebar.open {
+    left: 0; /* Mostrar cuando está abierto */
+}
+
+.toggle-btn {
+    cursor: pointer;
+    color: white;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.sidebar-toggle {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1000; /* Asegurarse de que esté por encima de otros elementos */
+    display: none; /* Ocultar inicialmente */
+}
+
+.sidebar-toggle.hidden {
+    display: block; /* Mostrar el botón cuando el sidebar está cerrado */
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin: 15px 0;
+}
+
+.content {
+    margin-left: 20px;
+    padding: 20px;
+}

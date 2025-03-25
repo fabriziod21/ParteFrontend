@@ -1,0 +1,167 @@
+:root {
+  --white: hsl(0, 0%, 100%);
+  --black: hsl(240, 15%, 9%);
+  --red: hsl(0, 88%, 53%);
+  --dark-red: hsl(0, 70%, 40%);
+  --light-gray: hsl(0, 0%, 93%);
+}
+
+
+.cardcat_card {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  width: 19rem;
+  background-color: var(--black);
+  border-radius: 0.75rem;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.cardcat_card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.cardcat_card_image__container {
+  width: 100%;
+  height: 150px; /* Fixed height for uniformity */
+  overflow: hidden;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center the image vertically */
+  margin-bottom: 0.5rem;
+}
+
+.cardcat_card_image {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.cardcat_card_title {
+  font-size: 1.25rem;
+  color: var(--white);
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.cardcat_card_price {
+  color: var(--red);
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.cardcat_card_buttons {
+  display: flex; /* Use flexbox for alignment */
+  justify-content: space-between; /* Space between buttons */
+}
+
+.cardcat_button {
+  cursor: pointer;
+  width: 120px; /* Fixed width for buttons */
+  height: 35px; /* Increased height for better appearance */
+  margin: 0; /* Remove margin for alignment */
+  font-size: 0.8rem;
+  color: var(--white);
+  border: 0;
+  border-radius: 9px;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.add-to-cart {
+  background-color: rgb(55, 94, 64); /* Greenish color for Add to Cart */
+}
+
+.info-button {
+  background-color: rgb(15, 109, 146); /* Darker red for Info */
+}
+
+.cardcat_button:hover {
+  transform: scale(1.03);
+}
+
+.add-to-cart:hover {
+  background-color: hsl(113, 82%, 47%); /* Lighter green on hover */
+}
+
+.info-button:hover {
+  background-color: hsl(224, 73%, 49%); /* Slightly lighter dark red on hover */
+}
+
+.cardcat_card_paragraph {
+  margin-top: 0.125rem;
+  width: 100%;
+  font-size: 0.7rem;
+  color: var(--white);
+  opacity: 0.9;
+}
+
+/* Estilos para el modal */
+.modal-custom {
+  color: var(--white); /* Texto blanco */
+  border-radius: 0.75rem; /* Bordes redondeados */
+}
+
+.modal-header-custom {
+  border-bottom: 1px solid var(--dark-red); /* Línea inferior roja */
+  background-color: var(--black); /* Fondo negro para el header */
+}
+
+.modal-footer-custom {
+  border-top: 1px solid var(--dark-red); /* Línea superior roja */
+  background-color: var(--black); /* Fondo negro para el footer */
+}
+
+.cardcat_modal-content {
+  display: flex; /* Flexbox para contenido del modal */
+  align-items: center; /* Centrar verticalmente */
+}
+.cardcat_modal_image {
+  max-width: 250px; /* Ancho máximo de la imagen */
+  height: auto; /* Altura automática */
+  border-radius: 0.5rem; /* Bordes redondeados para la imagen */
+}
+
+.modal-description {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: white; /* Color más claro para descripción */
+}
+
+.modal-price,
+.modal-stock,
+.modal-supplier {
+  margin-top: 0.25rem; 
+  font-size: 0.85rem; 
+  color: white; /* Color rojo para precios y stock */
+}
+
+.cardcat_modal-body{
+  background-color: rgb(43, 42, 42);
+}
+
+.cerrar{
+background-color: red;
+border-color: red;
+}
+
+.cerrar:hover{
+  background-color: red;
+  border-color: red;
+}
+
+.bot{
+background-color: rgb(0, 255, 13);
+border-color: green;
+}
+
+.bot:hover{
+  background-color: green;
+  border-color: green;
+}

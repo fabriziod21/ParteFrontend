@@ -1,0 +1,23 @@
+.c {
+    background-color: #000000;
+  }
+  
+  .feedback-form h2 {
+    margin-bottom: 20px; /* Espacio inferior para los títulos */
+  }
+  
+  .map-container {
+    overflow: hidden; /* Asegurar que el mapa no sobresalga */
+    
+  }
+  
+  @media (max-width: 768px) {
+    .feedback-form h2 {
+      font-size: 1.5rem; /* Ajustar tamaño del texto en pantallas pequeñas */
+    }
+  
+    .cont {
+      padding: 2rem; /* Ajustar padding en pantallas pequeñas */
+    }
+  }
+  

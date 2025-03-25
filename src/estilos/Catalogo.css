@@ -1,0 +1,113 @@
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.catalogo-app-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.filtros-container {
+    width: 100%; 
+    padding: 16px; 
+    box-sizing: border-box; 
+    background-color: #f8f9fa; 
+}
+
+.catalogo-content-container {
+    flex: 1;
+    display: flex;
+    width: 100%; 
+}
+
+.catalogo-aside {
+    width: 250px; 
+    background-color: #f1f1f1; 
+    padding: 16px; 
+    box-sizing: border-box; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.catalogo-aside > * {
+    margin-bottom: 6px;
+}
+
+.catalogo-grid-container {
+    flex: 1;
+    width: 100%; 
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    padding: 12px; 
+    box-sizing: border-box;
+}
+
+
+.catalogo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 100px; 
+    max-width: 1200px; 
+    width: 100%; 
+    justify-content: center;
+}
+
+.aside-container {
+    margin-top: 10px; 
+}
+
+.aside-container {
+    margin: 16px; 
+}
+
+
+.aside-container input[type="checkbox"] {
+    margin-right: 8px; 
+    vertical-align: middle; 
+}
+
+.aside-container label {
+    display: block;
+    font-size: 14px; 
+    margin-bottom: 8px; 
+}
+
+.aside-container .card {
+    padding: 16px; 
+}
+
+
+/* Estilos para el carrusel */
+.slick-slide {
+  margin: 0 10px; /* Espaciado entre slides */
+}
+
+.catalogo-section {
+  margin-bottom: 2rem; /* Espaciado entre secciones */
+}
+
+.section-title {
+  font-size: 1.5rem; /* Tamaño del título de sección */
+  color: var(--white);
+  margin-bottom: 1rem; /* Espaciado inferior del título */
+}
+
+/* Estilo de puntos del carrusel */
+.slick-dots li button:before {
+  color: var(--white); /* Color de los puntos */
+}
+
+.slick-dots li.slick-active button:before {
+  color: hsl(0, 100%, 50%); /* Color del punto activo */
+}

@@ -1,0 +1,190 @@
+/* Navbar styles */
+.navbar-shadow {
+  position: fixed; /* Fixed at the top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1030; /* Stays above content */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+}
+
+/* Ensure body has padding to prevent overlap */
+
+
+/* Dropdown toggle customization */
+.dropdown-toggle::after {
+  display: none; 
+}
+
+/* Profile container styling */
+.profile-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* Profile image styling */
+.profile-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+/* Dropdown container alignment */
+.dropdown-container {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+/* Shopping cart icon styling */
+.shopping-cart-container {
+  display: flex;
+  align-items: center;
+}
+
+.shopping-cart-icon {
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000; /* Icon color */
+  margin-right: 10px; /* Spacing */
+}
+
+/* Modal styles */
+.modal-profile-header {
+  background: linear-gradient(to right, hsl(0, 0%, 2%), hsl(189, 99%, 26%));
+  color: var(--white);
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+
+.modal-profile-body {
+  background-color: black;
+  color: white;
+  padding: 1rem;
+}
+
+.modal-profile-footer .btn {
+  background-color: var(--white);
+  color: var(--black);
+}
+
+/* Ensure z-index for Offcanvas */
+.offcanvas {
+  z-index: 1040; /* Above all other content */
+}
+
+
+/* Navbar styles */
+.navbar-shadow {
+  position: relative; /* Cambiar de fixed a relative */
+  width: 100%; /* Ocupa todo el ancho de la ventana */
+  z-index: 1030; /* Asegura que el Navbar esté por encima del contenido */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para profundidad */
+}
+
+/* Asegúrate de que el cuerpo tenga un margen o relleno en la parte superior */
+
+.bto{
+  position: relative;
+  display: inline-block;
+  padding: 25px 30px;
+  margin: 40px 0;
+  color: #ffffff;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: 0.5s;
+  letter-spacing: 4px;
+  overflow: hidden;
+  margin-right: 50px;
+ 
+}
+.bto:hover{
+  background: #ffffff;
+  color: #050801;
+  box-shadow: 0 0 5px #ffffff,
+              0 0 25px #ffffff,
+              0 0 50px #ffffff,
+              0 0 200px #ffffff;
+   -webkit-box-reflect:below 1px linear-gradient(transparent, #0005);
+}
+a:nth-child(1){
+  filter: hue-rotate(270deg);
+}
+a:nth-child(2){
+  filter: hue-rotate(110deg);
+}
+a span{
+  position: absolute;
+  display: block;
+}
+.span1:nth-child(1){
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg,transparent,#ffffff);
+  animation: animate1 1s linear infinite;
+}
+@keyframes animate1{
+  0%{
+      left: -100%;
+  }
+  50%,100%{
+      left: 100%;
+  }
+}
+.span2:nth-child(2){
+  top: -100%;
+  right: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg,transparent,#ffffff);
+  animation: animate2 1s linear infinite;
+  animation-delay: 0.25s;
+}
+@keyframes animate2{
+  0%{
+      top: -100%;
+  }
+  50%,100%{
+      top: 100%;
+  }
+}
+.span3:nth-child(3){
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(270deg,transparent,#ffffff);
+  animation: animate3 1s linear infinite;
+  animation-delay: 0.50s;
+}
+@keyframes animate3{
+  0%{
+      right: -100%;
+  }
+  50%,100%{
+      right: 100%;
+  }
+}
+
+
+.span4:nth-child(4){
+  bottom: -100%;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(360deg,transparent,#ffffff);
+  animation: animate4 1s linear infinite;
+  animation-delay: 0.75s;
+}
+@keyframes animate4{
+  0%{
+      bottom: -100%;
+  }
+  50%,100%{
+      bottom: 100%;
+  }
+}

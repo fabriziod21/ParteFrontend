@@ -1,0 +1,65 @@
+/* Asegura que el contenedor ocupe toda la pantalla sin márgenes ni padding */
+.home-page-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Elimina cualquier restricción de ancho del contenedor del carrusel */
+.contenedor1 {
+  width: 100vw; /* Ocupar el 100% del viewport */
+  margin: 0 auto; /* Asegurar que esté centrado */
+  padding: 0; /* Sin relleno */
+}
+
+.contenedor1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  margin: 20px 0;
+  background-color: #f8f9fa; /* Fondo ligero para resaltar la sección */
+}
+
+.contenedor1 .texto-objetivo {
+  flex: 1;
+  padding-right: 20px; /* Añadir espacio entre el texto y la imagen */
+}
+
+.contenedor1 .imagen-derecha img {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Estilos para contenedor 2 */
+.contenedor2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  margin: 20px 0;
+  background-color: #e9ecef; /* Otro fondo ligero para diferenciar */
+}
+
+.contenedor2 .imagen-izquierda img {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.contenedor2 .texto-objetivo {
+  flex: 1;
+  padding-left: 20px; /* Añadir espacio entre la imagen y el texto */
+}
+
+.imagen-derecha img, .imagen-izquierda img {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.imagen-derecha img:hover, .imagen-izquierda img:hover {
+  transform: scale(1.05); /* Pequeño zoom */
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Sombra ligera */
+}

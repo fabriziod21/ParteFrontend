@@ -1,0 +1,22 @@
+.calificacion {
+    display: flex;
+    align-items: center;
+    margin: 10px 0px;
+  }
+  
+  .estrella {
+    font-size: 2rem; /* Tamaño de la estrella */
+    cursor: pointer; /* Cambiar cursor al pasar sobre la estrella */
+    color: lightgray; /* Color de las estrellas no activas */
+    transition: color 0.2s; /* Efecto de transición */
+  }
+  
+  .estrella-activa {
+    color: gold; /* Color de las estrellas activas */
+  }
+
+  .calificacion p {
+    margin-top: 22px;
+    margin-left: 15px;
+  }
+  

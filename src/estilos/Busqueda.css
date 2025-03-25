@@ -1,0 +1,15 @@
+.navbar-nav .form-check {
+    margin-right: 1rem; 
+  }
+  
+  .navbar-nav .form {
+    margin-left: 100px; 
+  }
+  
+  .navbar-nav .form-control {
+    max-width: 200px; 
+  }
+  
+  .navbar-nav .btn {
+    margin-left: 0.5rem; 
+  }

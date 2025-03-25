@@ -1,0 +1,29 @@
+.filtros-navbar {
+    background-color: #f8f9fa; 
+    padding: 0.5rem 1rem; 
+  }
+  
+  .filters-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    width: 100%; 
+  }
+  
+  .filters-content .nav {
+    margin-bottom: 1rem;
+  }
+  
+  .filters-content .form {
+    display: flex;
+    align-items: center; 
+  }
+  
+  .filters-content .form .form-control {
+    max-width: 300px;
+  }
+  
+  .filters-content .form .btn-outline-success {
+    margin-left: 0.5rem;
+  }
+  
