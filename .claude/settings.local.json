@@ -6,7 +6,8 @@
       "Bash(npm uninstall:*)",
       "Bash(cat:*)",
       "Bash(findstr:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ]
   }
 }
