@@ -1,24 +1,45 @@
 import React, { useState } from 'react';
 import Sidebar2, { SidebarItem } from './Sidebar2';
-import { Grid, Box, BarChart2, Users } from 'lucide-react';
+import {
+  Grid,
+  Box,
+  BarChart2,
+  Users,
+  MessageCircle,
+  FileText,
+  Package,
+  Sun,
+  Moon,
+  Bell,
+  Search,
+  ChevronDown,
+  User,
+  Settings,
+  LogOut,
+  MapPin,
+  Phone,
+  Mail,
+  Edit3,
+  Save,
+  X,
+  Watch
+} from 'lucide-react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Productos from './Productos';
 import Clientes from './Clientes';
 import Inventario from './Inventario';
 import Dashboard from './Dashboard';
 import Footer from "./Footer";
-import { MessageCircle, FileText, Package } from 'lucide-react';
 import Coments from './Coments';
-import { Image } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
 import img from '../imagenes/sd.jpeg';
-import Container from 'react-bootstrap/Container';
-import Dropdown from 'react-bootstrap/Dropdown';
 
 const AdminHomePage = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isProfileEditable, setIsProfileEditable] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [userData, setUserData] = useState({
     nombre: user?.nombre || "",
     direccion: user?.direccion || "",
@@ -26,9 +47,14 @@ const AdminHomePage = ({ user, onLogout }) => {
     email: user?.correo || "",
   });
 
-
-  const handleProfileClose = () => setShowProfileModal(false);
-  const handleProfileShow = () => setShowProfileModal(true);
+  const handleProfileClose = () => {
+    setShowProfileModal(false);
+    setIsProfileEditable(false);
+  };
+  const handleProfileShow = () => {
+    setShowProfileModal(true);
+    setShowDropdown(false);
+  };
   const toggleProfileEdit = () => setIsProfileEditable(prev => !prev);
 
   const handleProfileChange = (e) => {
@@ -47,13 +73,9 @@ const AdminHomePage = ({ user, onLogout }) => {
   };
 
   const handleSave = () => {
-
     console.log('Updated user data:', userData);
-
-
     setIsProfileEditable(false);
   };
-
 
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem('darkMode');
@@ -72,12 +94,29 @@ const AdminHomePage = ({ user, onLogout }) => {
     });
   };
 
+  // Estilos reutilizables
+  const navStyle = {
+    background: darkMode
+      ? 'linear-gradient(180deg, #0a0a0a 0%, #141414 100%)'
+      : 'linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%)',
+    borderBottom: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0,0,0,0.08)'}`,
+    boxShadow: darkMode ? '0 4px 20px rgba(0, 0, 0, 0.3)' : '0 2px 10px rgba(0,0,0,0.05)'
+  };
+
+  const inputStyle = {
+    background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    border: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.1)'}`,
+    color: darkMode ? '#ffffff' : '#1a1a1a'
+  };
+
   return (
     <div className={`flex h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
       <Sidebar2
         isOpen={isOpen}
         toggleSidebar={toggleSidebar}
         darkMode={darkMode}
+        user={user}
+        onLogout={handleLogoutClick}
         className={`${isOpen ? 'block w-64' : 'hidden'} md:block md:w-64`}
       >
         <SidebarItem icon={<Grid />} text="Dashboard" to="/adminhomepage/dashboard" />
@@ -88,191 +127,449 @@ const AdminHomePage = ({ user, onLogout }) => {
         <SidebarItem icon={< Package />} text="Proveedores y Categorias" to="" />
         <SidebarItem icon={< FileText />} text="Reportes" to="" />
       </Sidebar2>
-      <div className={`flex-1 transition-all duration-300 ${isOpen ? 'ml-21' : 'mr-0'} overflow-y-auto h-full`}>
-        <nav className={`navbar navbar-expand-lg transition-colors duration-500 ${darkMode ? 'bg-dark text-white' : 'bg-light text-dark'} p-3`}>
-          <div className="container-fluid d-flex justify-content-between align-items-center">
-            <a className="navbar-brand" href="/"></a>
-
-            <div className="d-flex align-items-center ms-auto">
-              <div className="d-flex align-items-center me-3">
-                <label htmlFor="darkModeSwitch" className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="darkModeSwitch"
-                    className="sr-only peer"
-                    checked={darkMode}
-                    onChange={toggleDarkMode}
-                  />
-                  <div className={`group peer ring-0 bg-gradient-to-bl from-white via-cyan-500 to-cyan-700 rounded-full outline-none duration-1000 after:duration-300 w-20 h-10 shadow-md peer-focus:outline-none
-    after:content-[''] after:rounded-full after:absolute after:bg-[#0D2B39] 
-    peer-checked:after:rotate-180 after:bg-[conic-gradient(from_135deg,_#b2a9a9,_#b2a8a8,_#ffffff,_#d7dbd9_,_#ffffff,_#b2a8a8)] 
-    after:outline-none after:h-8 after:w-8 after:top-1 after:left-1
-    peer-checked:after:translate-x-9 peer-hover:after:scale-95 peer-checked:bg-gradient-to-r peer-checked:from-red-600 peer-checked:to-black`}>
-                  </div>
-                </label>
-
-                <span
-                  className={`ml-2 text-lg font-semibold transition-all ${darkMode ? 'text-red-600' : 'text-cyan-500'}`}
-                  style={{ minWidth: '140px', textAlign: 'center' }}
-                >
-                  {darkMode ? 'Modo Oscuro' : 'Modo Claro'}
-                </span>
-              </div>
-
-              <div className="profile-container d-flex align-items-center">
-                <Image
-                  src={img}
-                  roundedCircle
-                  className="profile-image me-2"
-                  onClick={handleProfileShow}
-                  style={{ width: '40px', height: '40px', cursor: 'pointer' }}
+      <div className={`flex-1 transition-all duration-300 overflow-y-auto h-full`}>
+        {/* Navigation Bar - Luxury Style */}
+        <nav className="sticky top-0 z-40 px-6 py-4" style={navStyle}>
+          <div className="flex items-center justify-between">
+            {/* Left Side - Search */}
+            <div className="flex items-center gap-4">
+              <div className="relative hidden md:block">
+                <Search
+                  size={18}
+                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}
                 />
-                <Dropdown className="dropdown-container">
-                  <Dropdown.Toggle variant="link" className="p-0">
-                    <span className="dropdown-arrow"></span>
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={handleProfileShow}>Perfil de Usuario</Dropdown.Item>
-                    <Dropdown.Item onClick={handleLogoutClick}>Logout</Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2.5 rounded-xl w-64 focus:outline-none transition-all focus:w-80"
+                  style={{
+                    ...inputStyle,
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Right Side - Actions */}
+            <div className="flex items-center gap-3">
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={toggleDarkMode}
+                className="relative w-14 h-8 rounded-full transition-all duration-300 flex items-center"
+                style={{
+                  background: darkMode
+                    ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
+                    : 'linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%)',
+                  border: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.3)' : 'rgba(0,0,0,0.1)'}`,
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                }}
+              >
+                <div
+                  className="absolute w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300"
+                  style={{
+                    background: darkMode
+                      ? 'linear-gradient(135deg, #d4af37 0%, #b8962e 100%)'
+                      : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    left: darkMode ? '26px' : '2px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  {darkMode ? (
+                    <Moon size={14} className="text-black" />
+                  ) : (
+                    <Sun size={14} className="text-white" />
+                  )}
+                </div>
+              </button>
+
+              {/* Notifications */}
+              <button
+                className="relative p-2.5 rounded-xl transition-all hover:scale-105"
+                style={{
+                  background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                  border: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.1)'}`
+                }}
+              >
+                <Bell size={20} style={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }} />
+                <span
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ background: '#ef4444', color: '#ffffff' }}
+                >
+                  3
+                </span>
+              </button>
+
+              {/* Divider */}
+              <div
+                className="h-8 w-px mx-2"
+                style={{ background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}
+              />
+
+              {/* Profile Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl transition-all hover:scale-[1.02]"
+                  style={{
+                    background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                    border: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.08)'}`
+                  }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                    style={{
+                      background: 'linear-gradient(135deg, #d4af37 0%, #b8962e 100%)',
+                      color: '#0a0a0a'
+                    }}
+                  >
+                    {user?.nombre?.charAt(0)?.toUpperCase() || 'A'}
+                  </div>
+                  <div className="hidden md:block text-left">
+                    <p
+                      className="text-sm font-semibold"
+                      style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}
+                    >
+                      {user?.nombre || 'Administrador'}
+                    </p>
+                    <p
+                      className="text-xs"
+                      style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}
+                    >
+                      Admin
+                    </p>
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className="hidden md:block transition-transform"
+                    style={{
+                      color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                      transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)'
+                    }}
+                  />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowDropdown(false)}
+                    />
+                    <div
+                      className="absolute right-0 mt-2 w-56 rounded-xl overflow-hidden z-50"
+                      style={{
+                        background: darkMode
+                          ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.99) 100%)'
+                          : 'linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%)',
+                        border: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.1)'}`,
+                        boxShadow: darkMode
+                          ? '0 20px 40px rgba(0, 0, 0, 0.5)'
+                          : '0 10px 30px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      {/* User Info */}
+                      <div
+                        className="px-4 py-3"
+                        style={{
+                          borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+                        }}
+                      >
+                        <p
+                          className="font-semibold text-sm"
+                          style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}
+                        >
+                          {user?.nombre || 'Administrador'}
+                        </p>
+                        <p
+                          className="text-xs truncate"
+                          style={{ color: '#d4af37' }}
+                        >
+                          {user?.correo || 'admin@morvic.com'}
+                        </p>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <button
+                          onClick={handleProfileShow}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 transition-all"
+                          style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = darkMode ? 'rgba(212, 175, 55, 0.1)' : 'rgba(0,0,0,0.05)';
+                            e.currentTarget.style.color = '#d4af37';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+                          }}
+                        >
+                          <User size={18} />
+                          <span className="text-sm">Mi Perfil</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setShowDropdown(false);
+                            navigate('/adminhomepage/settings');
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 transition-all"
+                          style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = darkMode ? 'rgba(212, 175, 55, 0.1)' : 'rgba(0,0,0,0.05)';
+                            e.currentTarget.style.color = '#d4af37';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+                          }}
+                        >
+                          <Settings size={18} />
+                          <span className="text-sm">Configuracion</span>
+                        </button>
+                      </div>
+
+                      {/* Logout */}
+                      <div
+                        style={{
+                          borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+                        }}
+                      >
+                        <button
+                          onClick={handleLogoutClick}
+                          className="w-full flex items-center gap-3 px-4 py-3 transition-all"
+                          style={{ color: '#ef4444' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <LogOut size={18} />
+                          <span className="text-sm font-medium">Cerrar Sesion</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </nav>
 
-        <Modal show={showProfileModal} onHide={handleProfileClose} className="profile-modal ">
-          <Modal.Header closeButton className={`${darkMode ? 'bg-fondo text-white' : 'bg-white text-black'} `}>
-            <Modal.Title className={`text-lg font-semibold ${darkMode ? ' text-white' : ' text-black'} `}>Perfil de Usuario</Modal.Title>
-          </Modal.Header>
-          <Modal.Body className={`${darkMode ? ' bg-bgper' : ' bg-white'} `}>
-            <Container className="text-center">
-              <Image
-                src={img}
-                roundedCircle
-                className="profile-modal__profile-image mb-4 mx-auto"
-                style={{ width: '150px', height: '150px' }}
-              />
+        {/* Profile Modal - Luxury Style */}
+        <Modal show={showProfileModal} onHide={handleProfileClose} centered>
+          <div
+            style={{
+              background: darkMode ? '#0a0a0a' : '#ffffff',
+              borderRadius: '20px',
+              overflow: 'hidden',
+              border: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.1)'}`
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              className="relative px-6 py-8 text-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)',
+                borderBottom: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.1)'}`
+              }}
+            >
+              {/* Close Button */}
+              <button
+                onClick={handleProfileClose}
+                className="absolute top-4 right-4 p-2 rounded-lg transition-all hover:scale-105"
+                style={{
+                  background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                }}
+              >
+                <X size={18} style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }} />
+              </button>
 
+              {/* Avatar */}
+              <div className="relative inline-block mb-4">
+                <div
+                  className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold mx-auto"
+                  style={{
+                    background: 'linear-gradient(135deg, #d4af37 0%, #b8962e 100%)',
+                    color: '#0a0a0a',
+                    boxShadow: '0 8px 30px rgba(212, 175, 55, 0.4)'
+                  }}
+                >
+                  {user?.nombre?.charAt(0)?.toUpperCase() || 'A'}
+                </div>
+                <div
+                  className="absolute bottom-1 right-1 w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{
+                    background: '#22c55e',
+                    border: `3px solid ${darkMode ? '#0a0a0a' : '#ffffff'}`
+                  }}
+                />
+              </div>
 
-              <label htmlFor="nombre" className={`${darkMode ? ' text-white' : ' text-black'} block mb-2 text-sm font-medium `}>Nombre Completo</label>
-              <div className="relative mb-4 flex items-center">
-                <svg className="w-5 h-5 text-gray-500 absolute left-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM4 20c1.06-3.08 4-6 8-6s6.94 2.92 8 6H4z" />
-                </svg>
+              <h3
+                className="text-xl font-bold"
+                style={{ color: darkMode ? '#ffffff' : '#1a1a1a', fontFamily: "'Playfair Display', serif" }}
+              >
+                {user?.nombre || 'Administrador'}
+              </h3>
+              <p className="text-sm" style={{ color: '#d4af37' }}>
+                Administrador del Sistema
+              </p>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Nombre */}
+              <div>
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide mb-2"
+                  style={{ color: '#d4af37' }}
+                >
+                  <User size={14} />
+                  Nombre Completo
+                </label>
                 <input
                   type="text"
-                  id="nombre"
                   name="nombre"
                   value={userData.nombre}
                   onChange={handleProfileChange}
                   readOnly={!isProfileEditable}
-                  className={`${darkMode ? ' bg-bgper text-white border-white' : ' bg-white text-black border-black'} border  text-sm rounded-lg  block w-full pl-10 p-2.5 ${!isProfileEditable ? 'cursor-not-allowed opacity-50' : ''}`}
+                  className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all"
+                  style={{
+                    ...inputStyle,
+                    opacity: isProfileEditable ? 1 : 0.7,
+                    cursor: isProfileEditable ? 'text' : 'not-allowed'
+                  }}
                   placeholder="Escribe tu nombre"
                 />
               </div>
 
-
-              <label htmlFor="direccion" className={`${darkMode ? ' text-white' : ' text-black'} block mb-2 text-sm font-medium `}>Dirección</label>
-              <div className="relative mb-4 flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5 absolute left-3 top-2.5 text-gray-500"
+              {/* Direccion */}
+              <div>
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide mb-2"
+                  style={{ color: '#d4af37' }}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                </svg>
-
+                  <MapPin size={14} />
+                  Direccion
+                </label>
                 <input
                   type="text"
-                  id="direccion"
                   name="direccion"
                   value={userData.direccion}
                   onChange={handleProfileChange}
                   readOnly={!isProfileEditable}
-                  className={`${darkMode ? ' bg-bgper text-white border-white' : ' bg-white text-black border-black'} border  text-sm rounded-lg  block w-full pl-10 p-2.5 ${!isProfileEditable ? 'cursor-not-allowed opacity-50' : ''}`}
-                  placeholder="Escribe tu dirección"
+                  className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all"
+                  style={{
+                    ...inputStyle,
+                    opacity: isProfileEditable ? 1 : 0.7,
+                    cursor: isProfileEditable ? 'text' : 'not-allowed'
+                  }}
+                  placeholder="Escribe tu direccion"
                 />
               </div>
 
-              <label htmlFor="celular" className={`${darkMode ? ' text-white' : ' text-black'} block mb-2 text-sm font-medium `}>Celular</label>
-              <div className="relative mb-4 flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5 absolute left-3 top-3 text-gray-500"
+              {/* Celular */}
+              <div>
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide mb-2"
+                  style={{ color: '#d4af37' }}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
-                  />
-                </svg>
+                  <Phone size={14} />
+                  Celular
+                </label>
                 <input
                   type="text"
-                  id="celular"
                   name="celular"
                   value={userData.celular}
                   onChange={handleProfileChange}
                   readOnly={!isProfileEditable}
-                  className={`${darkMode ? ' bg-bgper text-white border-white' : ' bg-white text-black border-black'} border  text-sm rounded-lg  block w-full pl-10 p-2.5 ${!isProfileEditable ? 'cursor-not-allowed opacity-50' : ''}`}
-                  placeholder="Escribe tu número de celular"
+                  className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all"
+                  style={{
+                    ...inputStyle,
+                    opacity: isProfileEditable ? 1 : 0.7,
+                    cursor: isProfileEditable ? 'text' : 'not-allowed'
+                  }}
+                  placeholder="Escribe tu celular"
                 />
               </div>
 
-
-              <label htmlFor="email" className={`${darkMode ? ' text-white' : ' text-black'} block mb-2 text-sm font-medium `}>Correo</label>
-              <div className="relative mb-4 flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-5 h-5 absolute left-3 top-3 text-gray-500"
+              {/* Email */}
+              <div>
+                <label
+                  className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide mb-2"
+                  style={{ color: '#d4af37' }}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25"
-                  />
-                </svg>
+                  <Mail size={14} />
+                  Correo Electronico
+                </label>
                 <input
                   type="email"
-                  id="email"
                   name="email"
                   value={userData.email}
                   onChange={handleProfileChange}
                   readOnly={!isProfileEditable}
-                  className={`${darkMode ? ' bg-bgper text-white border-white' : ' bg-white text-black border-black'} border  text-sm rounded-lg  block w-full pl-10 p-2.5 ${!isProfileEditable ? 'cursor-not-allowed opacity-50' : ''}`}
+                  className="w-full px-4 py-3 rounded-xl focus:outline-none transition-all"
+                  style={{
+                    ...inputStyle,
+                    opacity: isProfileEditable ? 1 : 0.7,
+                    cursor: isProfileEditable ? 'text' : 'not-allowed'
+                  }}
                   placeholder="Escribe tu correo"
                 />
               </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              className="flex items-center justify-between gap-3 p-6"
+              style={{
+                borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+              }}
+            >
+              <button
+                onClick={handleProfileClose}
+                className="flex-1 py-3 rounded-xl font-semibold transition-all hover:scale-[1.02]"
+                style={{
+                  background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                  border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                  color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
+                }}
+              >
+                Cancelar
+              </button>
 
               <button
-                className={`btno ${isProfileEditable ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'} 
-                     px-4 py-2 rounded-md shadow-md 
-                     transition duration-200 ease-in-out 
-                     focus:outline-none focus:ring-2 focus:ring-offset-2 
-                     ${isProfileEditable ? 'hover:bg-green-600' : 'hover:bg-yellow-600'}`}
                 onClick={isProfileEditable ? handleSave : toggleProfileEdit}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all hover:scale-[1.02]"
+                style={{
+                  background: isProfileEditable
+                    ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                    : 'linear-gradient(135deg, #d4af37 0%, #b8962e 100%)',
+                  color: isProfileEditable ? '#ffffff' : '#0a0a0a',
+                  boxShadow: isProfileEditable
+                    ? '0 4px 15px rgba(34, 197, 94, 0.3)'
+                    : '0 4px 15px rgba(212, 175, 55, 0.3)'
+                }}
               >
-                {isProfileEditable ? 'Guardar' : 'Editar'}
+                {isProfileEditable ? (
+                  <>
+                    <Save size={18} />
+                    Guardar
+                  </>
+                ) : (
+                  <>
+                    <Edit3 size={18} />
+                    Editar Perfil
+                  </>
+                )}
               </button>
-            </Container>
-          </Modal.Body>
-          <Modal.Footer className={`${darkMode ? ' bg-bgper ' : ' bg-white '}  `}>
-            <button className="btn btn-danger" onClick={handleProfileClose}>
-              Cerrar
-            </button>
-          </Modal.Footer>
+            </div>
+          </div>
         </Modal>
 
         <Routes>

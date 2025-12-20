@@ -1,88 +1,190 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle, FiLogIn, FiWatch } from 'react-icons/fi';
+import '../estilos/Login.css';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  // Elimina el sessionStorage al montar el componente
   useEffect(() => {
-    sessionStorage.clear(); // Elimina todo el sessionStorage
+    sessionStorage.clear();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    setError('');
+    setIsLoading(true);
+
     const loginData = {
       correo: email,
       contrasena: password,
     };
-  
+
     try {
       const response = await axios.post('http://localhost:8080/api/usuarios/login', loginData, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-  
+
       const user = response.data;
-      // Guarda el usuario en sessionStorage
       sessionStorage.setItem('user', JSON.stringify(user));
+
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       onLogin(user);
-  
-      // Redirige según el rol del usuario
-      if (user.rol && user.rol.roles === "cliente") { // Asegúrate de que "rol" exista y se compare correctamente
+
+      if (user.rol && user.rol.roles === "cliente") {
         navigate('/homepage', { replace: true });
       } else {
         navigate('/adminhomepage/dashboard', { replace: true });
       }
     } catch (err) {
-      // Manejo de errores, revisa si hay respuesta desde el backend
       const errorMsg =
         err.response && err.response.data && err.response.data.message
           ? err.response.data.message
-          : 'Email o contraseña incorrectos';
+          : 'Email o contrasena incorrectos';
       setError(errorMsg);
-      console.error('Error al iniciar sesión:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Email:</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+    <div className="login-page">
+      {/* Decorative Elements */}
+      <div className="login-decoration login-decoration-1"></div>
+      <div className="login-decoration login-decoration-2"></div>
+
+      {/* Login Card */}
+      <div className="login-card">
+        {/* Brand Section */}
+        <div className="login-brand">
+          <div className="login-logo">
+            <FiWatch />
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Contraseña:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <h1 className="login-brand-name">MORVIC</h1>
+          <p className="login-brand-tagline">Relojes de Lujo</p>
+        </div>
+
+        {/* Login Form */}
+        <form className="login-form" onSubmit={handleSubmit}>
+          {/* Email Field */}
+          <div className="login-form-group">
+            <label className="login-label">Correo Electronico</label>
+            <div className="login-input-wrapper">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ejemplo@correo.com"
+                className="login-input"
+                required
+              />
+              <FiMail className="login-input-icon" />
+            </div>
           </div>
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+          {/* Password Field */}
+          <div className="login-form-group">
+            <label className="login-label">Contrasena</label>
+            <div className="login-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Ingresa tu contrasena"
+                className="login-input"
+                required
+                style={{ paddingRight: '3rem' }}
+              />
+              <FiLock className="login-input-icon" />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me & Forgot Password */}
+          <div className="login-remember">
+            <label className="login-remember-checkbox">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span className="login-checkbox-custom">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </span>
+              <span className="login-remember-label">Recordarme</span>
+            </label>
+            <Link to="/recuperar" className="login-forgot-link">
+              Olvidaste tu contrasena?
+            </Link>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="login-error">
+              <FiAlertCircle />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-500 transition duration-200"
+            className="login-submit-btn"
+            disabled={isLoading}
           >
-            Ingresar
+            {isLoading ? (
+              <>
+                <span className="login-spinner"></span>
+                Ingresando...
+              </>
+            ) : (
+              <>
+                <FiLogIn />
+                Iniciar Sesion
+              </>
+            )}
           </button>
         </form>
+
+        {/* Register Link */}
+        <div className="login-register">
+          <span className="login-register-text">
+            No tienes una cuenta?
+            <Link to="/registro" className="login-register-link">
+              Registrate
+            </Link>
+          </span>
+        </div>
       </div>
     </div>
   );

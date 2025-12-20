@@ -1,23 +1,362 @@
+/* ========== Feedback Section Container ========== */
+.feedback-section {
+  background: linear-gradient(180deg, #0a0a0a 0%, #111111 100%);
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.feedback-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+}
+
+/* ========== Main Container ========== */
 .c {
-    background-color: #000000;
+  background: transparent;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========== Form Container ========== */
+.cont {
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 20px;
+  padding: 3rem !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cont:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(212, 175, 55, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-5px);
+}
+
+/* Decorative corner accents */
+.cont::before,
+.cont::after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  pointer-events: none;
+}
+
+.cont::before {
+  top: 15px;
+  left: 15px;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 8px 0 0 0;
+}
+
+.cont::after {
+  bottom: 15px;
+  right: 15px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 8px 0;
+}
+
+/* ========== Section Header ========== */
+.feedback-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.feedback-header .subtitle {
+  color: #d4af37;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.feedback-form h2,
+.cont h2 {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(135deg, #ffffff 0%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.feedback-header .divider {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  margin: 1rem auto;
+}
+
+/* ========== Form Styling ========== */
+.comment-form {
+  position: relative;
+  z-index: 1;
+}
+
+.form-group-custom {
+  margin-bottom: 1.5rem;
+}
+
+.form-group-custom label {
+  display: block;
+  color: #a3a3a3;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+/* ========== Textarea Styling ========== */
+.cont .form-control,
+.comment-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 1rem 1.25rem !important;
+  color: #ffffff !important;
+  font-size: 1rem;
+  font-family: 'Montserrat', sans-serif;
+  resize: none;
+  transition: all 0.3s ease;
+  min-height: 140px;
+}
+
+.cont .form-control::placeholder,
+.comment-textarea::placeholder {
+  color: #666666 !important;
+  font-style: italic;
+}
+
+.cont .form-control:focus,
+.comment-textarea:focus {
+  outline: none !important;
+  border-color: #d4af37 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  box-shadow:
+    0 0 0 3px rgba(212, 175, 55, 0.1),
+    0 0 20px rgba(212, 175, 55, 0.1) !important;
+}
+
+/* ========== Character Counter ========== */
+.char-counter {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #666666;
+  margin-top: 0.5rem;
+}
+
+.char-counter.warning {
+  color: #f59e0b;
+}
+
+.char-counter.limit {
+  color: #ef4444;
+}
+
+/* ========== Submit Button ========== */
+.cont .btn-danger,
+.submit-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 0.875rem 2.5rem !important;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0a0a0a !important;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.cont .btn-danger:hover,
+.submit-btn:hover {
+  background: linear-gradient(135deg, #f4d03f 0%, #d4af37 100%) !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 25px rgba(212, 175, 55, 0.4),
+    0 0 30px rgba(212, 175, 55, 0.2) !important;
+}
+
+.cont .btn-danger:active,
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+/* Button shimmer effect */
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.submit-btn:hover::before {
+  left: 100%;
+}
+
+/* ========== Map Container ========== */
+.map-container {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  height: 100%;
+  min-height: 400px;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.map-container:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(212, 175, 55, 0.1);
+}
+
+.map-container iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  filter: grayscale(80%) contrast(1.1);
+  transition: filter 0.4s ease;
+}
+
+.map-container:hover iframe {
+  filter: grayscale(20%) contrast(1.05);
+}
+
+/* Map overlay gradient */
+.map-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.05) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+/* ========== Location Info ========== */
+.location-info {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.location-info .icon {
+  color: #d4af37;
+  font-size: 1.5rem;
+}
+
+.location-info .text {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.location-info .text span {
+  color: #a3a3a3;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 992px) {
+  .cont {
+    padding: 2rem !important;
+    margin-bottom: 2rem;
   }
-  
-  .feedback-form h2 {
-    margin-bottom: 20px; /* Espacio inferior para los títulos */
-  }
-  
+
   .map-container {
-    overflow: hidden; /* Asegurar que el mapa no sobresalga */
-    
+    min-height: 350px;
   }
-  
-  @media (max-width: 768px) {
-    .feedback-form h2 {
-      font-size: 1.5rem; /* Ajustar tamaño del texto en pantallas pequeñas */
-    }
-  
-    .cont {
-      padding: 2rem; /* Ajustar padding en pantallas pequeñas */
-    }
+}
+
+@media (max-width: 768px) {
+  .feedback-section {
+    padding: 3rem 1rem;
   }
-  
+
+  .cont h2,
+  .feedback-form h2 {
+    font-size: 1.75rem;
+  }
+
+  .cont {
+    padding: 1.5rem !important;
+  }
+
+  .cont::before,
+  .cont::after {
+    width: 40px;
+    height: 40px;
+  }
+
+  .map-container {
+    min-height: 300px;
+    border-radius: 16px;
+  }
+
+  .location-info {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* ========== Success Animation ========== */
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.submit-success {
+  animation: successPulse 0.5s ease;
+}

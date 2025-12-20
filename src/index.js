@@ -36,6 +36,7 @@ import DetallesProducto from './Componentes/DetallesProducto';
 import Resumen from './Componentes/Resumen';
 import axios from 'axios';
 import Estrellas from './Componentes/Estrellas';
+import { Handshake, Lightbulb, Award, Globe } from 'lucide-react';
 
 
 const HomePage = () => {
@@ -164,13 +165,15 @@ const HomePage = () => {
         <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">Nuestros Valores</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
-            { title: "Compromiso", description: "Siempre dedicados a satisfacer a nuestros clientes.", icon: "🤝" },
-            { title: "Innovación", description: "Buscamos mejorar y adaptarnos constantemente.", icon: "💡" },
-            { title: "Calidad", description: "Productos de excelencia que superan expectativas.", icon: "🏅" },
-            { title: "Responsabilidad", description: "Actuamos de manera ética y responsable.", icon: "🌍" },
+            { title: "Compromiso", description: "Siempre dedicados a satisfacer a nuestros clientes.", icon: Handshake },
+            { title: "Innovación", description: "Buscamos mejorar y adaptarnos constantemente.", icon: Lightbulb },
+            { title: "Calidad", description: "Productos de excelencia que superan expectativas.", icon: Award },
+            { title: "Responsabilidad", description: "Actuamos de manera ética y responsable.", icon: Globe },
           ].map((value, index) => (
             <div key={index} className="bg-black p-8 rounded-lg shadow-lg flex flex-col items-center" data-aos="zoom-in" data-aos-delay={`${index * 100}`}>
-              <div className="text-5xl mb-4">{value.icon}</div> {/* Ícono que representa el valor */}
+              <div className="w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8962e] shadow-lg">
+                <value.icon className="w-8 h-8 text-black" strokeWidth={1.5} />
+              </div>
               <h3 className="text-xl font-semibold text-white mb-2">{value.title}</h3>
               <p className="text-md text-gray-300">{value.description}</p>
             </div>
@@ -178,59 +181,103 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Comentarios Section */}
-      <div className="w-full max-w-screen-2xl mx-auto bg-bgper p-6 lg:p-20 mt-12 text-center rounded-lg border border-gray-400" data-aos="fade-up">
-        <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">Comentarios de Nuestros Clientes</h2>
-        {/* Carrusel de comentarios */}
-        <div className="relative">
-          <div className="overflow-hidden">
+      {/* Testimonios Section */}
+      <div className="w-full max-w-screen-2xl mx-auto py-16 lg:py-24 mt-12" data-aos="fade-up">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <span className="text-[#d4af37] text-sm font-semibold tracking-[0.3em] uppercase mb-4 block">Testimonios</span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Lo Que Dicen Nuestros Clientes
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent mx-auto mt-6"></div>
+        </div>
+
+        {/* Carrusel de testimonios */}
+        <div className="relative max-w-4xl mx-auto px-4">
+          {/* Icono de comillas decorativo */}
+          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-[#d4af37] opacity-20 text-8xl font-serif z-0">
+            "
+          </div>
+
+          <div className="overflow-hidden relative z-10">
             <div
-              className="flex transition-transform duration-500"
+              className="flex transition-all duration-700 ease-out"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
               {comments.map((comment, index) => (
-                <div key={index} className="min-w-full flex flex-col items-center justify-center p-6 space-y-4">
-                  <img
-                    src={comment.pic}
-                    alt={`Cliente ${index + 1}`}
-                    className="w-16 h-16 rounded-full mx-auto mb-4 border-2 border-red-600 shadow-md"
-                  />
-                  <div className="text-center">
-  <div className="stars text-yellow-400 mb-2">
-    {Array.from({ length: comment.estrellas }).map((_, i) => (
-      <span key={i}>⭐</span>
-    ))}
-  </div>
-  <p className="text-gray-300 text-lg lg:text-xl italic">"{comment.text}"</p>
-  <footer className="text-sm text-gray-500">
-    - {comment.nombre}{" "}
-    <span className="text-gray-400">{comment.date}</span>
-  </footer>
-</div>
+                <div key={index} className="min-w-full px-4">
+                  <div className="bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] rounded-2xl p-8 lg:p-12 border border-[#d4af37]/20 shadow-2xl">
+                    {/* Estrellas */}
+                    <div className="flex justify-center gap-1 mb-8">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-5 h-5 ${i < comment.estrellas ? 'text-[#d4af37]' : 'text-gray-600'}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
 
+                    {/* Texto del comentario */}
+                    <blockquote className="text-center mb-8">
+                      <p className="text-gray-300 text-lg lg:text-xl leading-relaxed italic" style={{ fontFamily: "'Playfair Display', serif" }}>
+                        "{comment.text}"
+                      </p>
+                    </blockquote>
+
+                    {/* Línea divisoria */}
+                    <div className="w-16 h-px bg-[#d4af37]/40 mx-auto mb-8"></div>
+
+                    {/* Info del cliente */}
+                    <div className="flex flex-col items-center">
+                      <div className="relative mb-4">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] rounded-full blur-md opacity-40"></div>
+                        <img
+                          src={comment.pic}
+                          alt={comment.nombre}
+                          className="relative w-16 h-16 rounded-full object-cover border-2 border-[#d4af37] shadow-lg"
+                        />
+                      </div>
+                      <h4 className="text-white font-semibold text-lg tracking-wide">{comment.nombre}</h4>
+                      <span className="text-[#d4af37]/70 text-sm mt-1">{comment.date}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
+
           {/* Botones de navegación */}
           <button
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700 transition"
+            className="absolute left-0 lg:-left-16 top-1/2 transform -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-[#1a1a1a] border border-[#d4af37]/30 text-[#d4af37] rounded-full shadow-lg hover:bg-[#d4af37] hover:text-black transition-all duration-300 group z-20"
             onClick={handlePrev}
           >
-            ‹
+            <svg className="w-5 h-5 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
           <button
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700 transition"
+            className="absolute right-0 lg:-right-16 top-1/2 transform -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-[#1a1a1a] border border-[#d4af37]/30 text-[#d4af37] rounded-full shadow-lg hover:bg-[#d4af37] hover:text-black transition-all duration-300 group z-20"
             onClick={handleNext}
           >
-            ›
+            <svg className="w-5 h-5 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
-          {/* Indicadores de página */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center space-x-2 mt-4">
+
+          {/* Indicadores */}
+          <div className="flex justify-center gap-3 mt-10">
             {comments.map((_, index) => (
               <button
                 key={index}
-                className={`w-3 h-3 rounded-full ${index === currentSlide ? "bg-red-600" : "bg-gray-500"}`}
+                className={`transition-all duration-300 rounded-full ${
+                  index === currentSlide
+                    ? "w-8 h-2 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"
+                    : "w-2 h-2 bg-gray-600 hover:bg-gray-500"
+                }`}
                 onClick={() => setCurrentSlide(index)}
               />
             ))}
