@@ -190,7 +190,9 @@ const Productos = ({ darkMode }) => {
         formData.append('imagenes', nuevoProducto.imagenFileExtra2);
       }
 
-      api.post("/api/producto/registrar", formData)
+      api.post("/api/producto/registrar", formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
         .then(response => {
           const nuevoProductoConID = {
             ...response.data,
