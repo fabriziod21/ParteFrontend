@@ -178,7 +178,7 @@ const Productos = ({ darkMode }) => {
       };
 
       const formData = new FormData();
-      formData.append('producto', JSON.stringify(productoAEnviar));
+      formData.append('producto', new Blob([JSON.stringify(productoAEnviar)], { type: 'application/json' }));
 
       if (nuevoProducto.imagenFile) {
         formData.append('imagenes', nuevoProducto.imagenFile);
@@ -195,8 +195,14 @@ const Productos = ({ darkMode }) => {
         })
         .then(response => {
           const nuevoProductoConID = {
-            ...response.data,
             id: response.data.idProducto || response.data.id,
+            nombre: response.data.nombre || "Sin nombre",
+            descripcion: response.data.descripcion || "Sin descripcion",
+            precio: response.data.precio || 0,
+            proveedor: response.data.proveedor?.nombre || nuevoProducto.proveedor || "Desconocido",
+            categorias: response.data.categoria?.nombre || nuevoProducto.categorias || "Sin categoria",
+            stock: response.data.stockActual || 0,
+            estado: response.data.estado || "Disponible",
           };
 
           setProductos((prev) => [...prev, nuevoProductoConID]);
