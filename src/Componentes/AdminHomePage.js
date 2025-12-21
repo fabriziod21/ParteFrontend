@@ -22,7 +22,11 @@ import {
   Edit3,
   Save,
   X,
-  Watch
+  Watch,
+  Truck,
+  Tags,
+  FileSpreadsheet,
+  ShoppingBag
 } from 'lucide-react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Productos from './Productos';
@@ -31,6 +35,9 @@ import Inventario from './Inventario';
 import Dashboard from './Dashboard';
 import Footer from "./Footer";
 import Coments from './Coments';
+import Proveedores from './Proveedores';
+import Categorias from './Categorias';
+import Reports from './Reports';
 import Modal from 'react-bootstrap/Modal';
 import img from '../imagenes/sd.jpeg';
 
@@ -123,9 +130,10 @@ const AdminHomePage = ({ user, onLogout }) => {
         <SidebarItem icon={<Box />} text="Productos" to="/adminhomepage/productos" />
         <SidebarItem icon={<BarChart2 />} text="Inventario" to="/adminhomepage/inventario" />
         <SidebarItem icon={<Users />} text="Clientes" to="/adminhomepage/clientes" />
-        <SidebarItem icon={< MessageCircle />} text="Comentarios" to="/adminhomepage/coments" />
-        <SidebarItem icon={< Package />} text="Proveedores y Categorias" to="" />
-        <SidebarItem icon={< FileText />} text="Reportes" to="" />
+        <SidebarItem icon={<MessageCircle />} text="Comentarios" to="/adminhomepage/coments" />
+        <SidebarItem icon={<Truck />} text="Proveedores" to="/adminhomepage/proveedores" />
+        <SidebarItem icon={<Tags />} text="Categorias" to="/adminhomepage/categorias" />
+        <SidebarItem icon={<FileSpreadsheet />} text="Reportes" to="/adminhomepage/reportes" />
       </Sidebar2>
       <div className={`flex-1 transition-all duration-300 overflow-y-auto h-full`}>
         {/* Navigation Bar - Luxury Style */}
@@ -200,6 +208,28 @@ const AdminHomePage = ({ user, onLogout }) => {
                 >
                   3
                 </span>
+              </button>
+
+              {/* Store Button */}
+              <button
+                onClick={() => navigate('/homepage')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all hover:scale-[1.02]"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                  border: '1px solid rgba(139, 92, 246, 0.4)',
+                  color: '#a78bfa'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0.15) 100%)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <ShoppingBag size={18} />
+                <span className="hidden md:inline text-sm font-semibold">Tienda</span>
               </button>
 
               {/* Divider */}
@@ -578,6 +608,9 @@ const AdminHomePage = ({ user, onLogout }) => {
           <Route path="/inventario" element={<Inventario darkMode={darkMode} />} />
           <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
           <Route path="/coments" element={<Coments darkMode={darkMode} />} />
+          <Route path="/proveedores" element={<Proveedores darkMode={darkMode} />} />
+          <Route path="/categorias" element={<Categorias darkMode={darkMode} />} />
+          <Route path="/reportes" element={<Reports darkMode={darkMode} />} />
         </Routes>
         <div className={`bg-gray-900 text-white ${darkMode ? 'bg-gray-900' : 'bg-gray-800'}`}>
           <Footer darkMode={darkMode} />

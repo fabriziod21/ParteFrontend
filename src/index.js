@@ -123,7 +123,7 @@ const HomePage = () => {
             Relojes de alta calidad para cada ocasión
           </p>
           <div className="lg:right-20" data-aos="fade-up" data-aos-delay="400">
-            <a href="/" className="bto">
+            <a href="/catalogo" className="bto">
               <span className="span1"></span>
               <span className="span2"></span>
               <span className="span3"></span>
@@ -467,7 +467,7 @@ const App = () => {
             {/* Contenido principal */}
             <main className={`main-content ${loading && !isAdminRoute ? 'hidden' : ''}`}>
               <Routes location={location}>
-                <Route path="/" element={<Navigate to="/login" />} />
+                <Route path="/" element={<Navigate to="/adminhomepage/dashboard" />} />
                 <Route path="/homepage" element={<HomePage />} />
                 <Route path="/catalogo" element={<Catalogo onAddToCart={handleAddToCart}  />} />
                 <Route path="/registro" element={<Registro />} />
@@ -489,8 +489,8 @@ const App = () => {
               </div>
             )}
 
-            {/* Footer solo visible cuando se muestra la navbar */}
-            {shouldShowNavbar && <Footer />}
+            {/* Footer solo visible cuando se muestra la navbar - siempre oscuro en cliente */}
+            {shouldShowNavbar && <Footer darkMode={true} />}
 
             {/* Off-Canvas del carrito */}
             <CartOffCanvas

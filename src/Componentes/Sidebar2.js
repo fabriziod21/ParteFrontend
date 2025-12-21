@@ -44,8 +44,12 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
       <nav
         className="h-full flex flex-col"
         style={{
-          background: 'linear-gradient(180deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%)',
-          borderRight: '1px solid rgba(212, 175, 55, 0.2)',
+          background: darkMode
+            ? 'linear-gradient(180deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%)'
+            : 'linear-gradient(180deg, #ffffff 0%, #f5f5f5 50%, #ffffff 100%)',
+          borderRight: darkMode
+            ? '1px solid rgba(212, 175, 55, 0.2)'
+            : '1px solid rgba(0, 0, 0, 0.1)',
           overflow: 'hidden'
         }}
       >
@@ -53,7 +57,7 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
         <div
           className="flex items-center justify-center flex-shrink-0"
           style={{
-            borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
+            borderBottom: darkMode ? '1px solid rgba(212, 175, 55, 0.15)' : '1px solid rgba(0, 0, 0, 0.08)',
             height: '72px',
             padding: expanded ? '0 16px' : '0 12px'
           }}
@@ -73,7 +77,7 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
                 >
                   MORVIC
                 </h2>
-                <span className="text-xs text-gray-500">Admin Panel</span>
+                <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Admin Panel</span>
               </div>
               <button
                 onClick={handleToggle}
@@ -114,7 +118,7 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
           {expanded && (
             <span
               className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'rgba(212, 175, 55, 0.5)' }}
+              style={{ color: darkMode ? 'rgba(212, 175, 55, 0.5)' : 'rgba(180, 140, 20, 0.7)' }}
             >
               Menu Principal
             </span>
@@ -122,7 +126,7 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
         </div>
 
         {/* Menu Items */}
-        <SidebarContext.Provider value={{ expanded }}>
+        <SidebarContext.Provider value={{ expanded, darkMode }}>
           <ul
             className="flex-1 space-y-1"
             style={{
@@ -143,7 +147,9 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
           style={{
             height: '1px',
             margin: '8px 16px',
-            background: 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent)'
+            background: darkMode
+              ? 'linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent)'
+              : 'linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent)'
           }}
         />
 
@@ -156,7 +162,7 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
             to="/adminhomepage/settings"
             className="flex items-center rounded-xl group"
             style={{
-              color: 'rgba(255, 255, 255, 0.6)',
+              color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
               height: '44px',
               padding: expanded ? '0 16px' : '0',
               justifyContent: expanded ? 'flex-start' : 'center',
@@ -175,8 +181,10 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
           style={{
             margin: expanded ? '0 12px 12px' : '0 8px 8px',
             padding: expanded ? '12px' : '10px 8px',
-            background: 'linear-gradient(145deg, rgba(20, 20, 20, 0.8) 0%, rgba(15, 15, 15, 0.9) 100%)',
-            border: '1px solid rgba(212, 175, 55, 0.2)'
+            background: darkMode
+              ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.8) 0%, rgba(15, 15, 15, 0.9) 100%)'
+              : 'linear-gradient(145deg, rgba(245, 245, 245, 0.9) 0%, rgba(235, 235, 235, 0.95) 100%)',
+            border: darkMode ? '1px solid rgba(212, 175, 55, 0.2)' : '1px solid rgba(0, 0, 0, 0.1)'
           }}
         >
           <div
@@ -202,7 +210,7 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
                   bottom: '0',
                   right: '0',
                   background: '#22c55e',
-                  border: '2px solid #141414'
+                  border: darkMode ? '2px solid #141414' : '2px solid #f5f5f5'
                 }}
               />
             </div>
@@ -210,10 +218,10 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
             {expanded && (
               <>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-white text-sm truncate">
+                  <h4 className={`font-semibold text-sm truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                     {user?.nombre || 'Administrador'}
                   </h4>
-                  <span className="text-xs truncate block" style={{ color: 'rgba(212, 175, 55, 0.7)' }}>
+                  <span className="text-xs truncate block" style={{ color: darkMode ? 'rgba(212, 175, 55, 0.7)' : 'rgba(180, 140, 20, 0.9)' }}>
                     {user?.correo || 'admin@morvic.com'}
                   </span>
                 </div>
@@ -265,7 +273,7 @@ export default function Sidebar2({ children, isOpen, toggleSidebar, darkMode, us
 }
 
 export function SidebarItem({ icon, text, to, alert }) {
-  const { expanded } = useContext(SidebarContext);
+  const { expanded, darkMode } = useContext(SidebarContext);
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -276,10 +284,14 @@ export function SidebarItem({ icon, text, to, alert }) {
         className="flex items-center rounded-xl"
         style={{
           background: isActive
-            ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)'
+            ? (darkMode
+                ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)'
+                : 'linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%)')
             : 'transparent',
-          border: isActive ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid transparent',
-          color: isActive ? '#d4af37' : 'rgba(255, 255, 255, 0.6)',
+          border: isActive
+            ? (darkMode ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(212, 175, 55, 0.4)')
+            : '1px solid transparent',
+          color: isActive ? '#d4af37' : (darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'),
           height: '44px',
           padding: expanded ? '0 16px' : '0',
           justifyContent: expanded ? 'flex-start' : 'center',
@@ -334,10 +346,10 @@ export function SidebarItem({ icon, text, to, alert }) {
         <div
           className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap invisible opacity-0 -translate-x-2 group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50 pointer-events-none"
           style={{
-            background: '#1a1a1a',
-            border: '1px solid rgba(212, 175, 55, 0.3)',
+            background: darkMode ? '#1a1a1a' : '#ffffff',
+            border: darkMode ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(212, 175, 55, 0.5)',
             color: '#d4af37',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)',
+            boxShadow: darkMode ? '0 4px 15px rgba(0, 0, 0, 0.5)' : '0 4px 15px rgba(0, 0, 0, 0.15)',
             transition: 'all 0.2s ease'
           }}
         >

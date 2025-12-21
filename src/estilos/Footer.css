@@ -424,3 +424,101 @@
   background: radial-gradient(circle, rgba(212, 175, 55, 0.02) 0%, transparent 70%);
   pointer-events: none;
 }
+
+/* ========== Light Mode Styles ========== */
+.luxury-footer.light-mode {
+  background: linear-gradient(180deg, #f8f8f8 0%, #f0f0f0 100%);
+}
+
+.luxury-footer.light-mode .footer-border {
+  background: linear-gradient(90deg, transparent, #b8962e, transparent);
+}
+
+.luxury-footer.light-mode .brand-name {
+  color: #1a1a1a;
+}
+
+.luxury-footer.light-mode .brand-description {
+  color: #555555;
+}
+
+.luxury-footer.light-mode .social-icon {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.luxury-footer.light-mode .social-icon:hover {
+  color: #ffffff;
+}
+
+.luxury-footer.light-mode .footer-links a {
+  color: #555555;
+}
+
+.luxury-footer.light-mode .contact-item {
+  color: #555555;
+}
+
+.luxury-footer.light-mode .contact-icon {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.luxury-footer.light-mode .newsletter-section {
+  border-left-color: rgba(0, 0, 0, 0.08);
+}
+
+.luxury-footer.light-mode .newsletter-text {
+  color: #555555;
+}
+
+.luxury-footer.light-mode .newsletter-form input {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+
+.luxury-footer.light-mode .newsletter-form input::placeholder {
+  color: #888888;
+}
+
+.luxury-footer.light-mode .newsletter-form input:focus {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: #d4af37;
+}
+
+.luxury-footer.light-mode .footer-bottom {
+  background: rgba(0, 0, 0, 0.03);
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.luxury-footer.light-mode .copyright {
+  color: #666666;
+}
+
+.luxury-footer.light-mode .footer-bottom-links a {
+  color: #666666;
+}
+
+.luxury-footer.light-mode .footer-bottom-links .separator {
+  color: #cccccc;
+}
+
+.luxury-footer.light-mode::before {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+}
+
+.luxury-footer.light-mode::after {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+}
+
+@media (max-width: 1024px) {
+  .luxury-footer.light-mode .newsletter-section {
+    border-top-color: rgba(0, 0, 0, 0.08);
+  }
+}
+
+@media (max-width: 480px) {
+  .luxury-footer.light-mode .newsletter-form input {
+    border-right-color: rgba(0, 0, 0, 0.1);
+  }
+}

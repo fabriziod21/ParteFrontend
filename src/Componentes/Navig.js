@@ -125,6 +125,19 @@ function Navig({ user, cartItems, onCartShow, onCartClose, onLogout }) {
 
             {/* Right Side Actions */}
             <Nav className="nav-actions">
+              {/* Admin Panel Button */}
+              {user && (
+                <button className="admin-panel-btn" onClick={() => navigate('/adminhomepage/dashboard')}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                  </svg>
+                  <span className="btn-text">Admin</span>
+                </button>
+              )}
+
               {/* Cart Button */}
               <button className="cart-btn" onClick={onCartShow}>
                 <ShoppingCartIcon />
