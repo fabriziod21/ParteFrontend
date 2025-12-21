@@ -166,14 +166,14 @@ const Productos = ({ darkMode }) => {
         descripcion: nuevoProducto.descripcion || "Descripcion del producto",
         precio: parseFloat(nuevoProducto.precio),
         estado: "Disponible",
-        stockMinimo: nuevoProducto.stockMinimo,
-        stockMaximo: nuevoProducto.stockMaximo,
+        stockMinimo: parseInt(nuevoProducto.stockMinimo),
+        stockMaximo: parseInt(nuevoProducto.stockMaximo),
         stockActual: parseInt(nuevoProducto.stock),
         categoria: {
-          idCategoria: categorias.find(categoria => categoria.nombre === nuevoProducto.categorias)?.id || 1,
+          idCategoria: categorias.find(categoria => categoria.nombre === nuevoProducto.categorias)?.idCategoria || 1,
         },
         proveedor: {
-          idProveedor: proveedores.find(proveedor => proveedor.nombre === nuevoProducto.proveedor)?.id || 1,
+          idProveedor: proveedores.find(proveedor => proveedor.nombre === nuevoProducto.proveedor)?.idProveedor || 1,
         },
       };
 
