@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CardCat from "../Componentes/CardCat";
-import axios from 'axios';
+import api from '../services/api';
 import "../estilos/Catalogo.css";
 
 export function Catalogo({ onAddToCart }) {
@@ -14,7 +14,7 @@ export function Catalogo({ onAddToCart }) {
 
   useEffect(() => {
     setLoading(true);
-    axios.get('http://localhost:8080/api/producto/listar')
+    api.get('/api/producto/listar')
       .then(response => {
         setProductos(response.data);
         setLoading(false);

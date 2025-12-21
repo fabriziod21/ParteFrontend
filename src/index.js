@@ -34,7 +34,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import DetallesProducto from './Componentes/DetallesProducto';
 import Resumen from './Componentes/Resumen';
-import axios from 'axios';
+import api from './services/api';
 import Estrellas from './Componentes/Estrellas';
 import { Handshake, Lightbulb, Award, Globe } from 'lucide-react';
 
@@ -56,7 +56,7 @@ const HomePage = () => {
 
   useEffect(() => {
     // Llamada a la API para obtener los comentarios
-    axios.get("http://localhost:8080/api/comentarios/listarActivos")
+    api.get("/api/comentarios/listarActivos")
       .then((response) => {
         const fetchedComments = response.data.map(comment => ({
           pic: "default-profile.png", // Puedes cambiar esto si la API provee imágenes

@@ -5,7 +5,7 @@ import { FaCcVisa, FaCcMastercard, FaMoneyBillWave } from 'react-icons/fa';
 import { HiOutlineShoppingBag } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import axios from "axios";
+import api from "../services/api";
 import "../estilos/Resumen.css";
 
 const Checkout = () => {
@@ -199,7 +199,7 @@ const Checkout = () => {
     };
 
     try {
-      const response = await axios.post("http://localhost:8080/api/pedido/registrar", pedidoData);
+      const response = await api.post("/api/pedido/registrar", pedidoData);
       console.log("Pedido registrado con exito:", response.data.idPedido);
 
       Swal.fire({

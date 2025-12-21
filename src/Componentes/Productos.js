@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api, { API_URL } from '../services/api';
 import io from "socket.io-client";
 import {
   Package,
@@ -24,7 +24,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const socket = io("http://localhost:8080");
+const socket = io(API_URL);
 
 const Productos = ({ darkMode }) => {
   const [productos, setProductos] = useState([]);
@@ -56,7 +56,7 @@ const Productos = ({ darkMode }) => {
 
   useEffect(() => {
     const fetchProductos = () => {
-      axios.get("http://localhost:8080/api/producto/listarPro")
+      api.get("/api/producto/listarPro")
         .then(response => {
           const productosMapeados = response.data.map(producto => ({
             id: producto.idProducto,
@@ -89,11 +89,11 @@ const Productos = ({ darkMode }) => {
   };
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/proveedor/listar')
+    api.get('/api/proveedor/listar')
       .then(response => setProveedores(response.data))
       .catch(error => console.error('Error al obtener proveedores:', error));
 
-    axios.get('http://localhost:8080/api/categoria/listar')
+    api.get('/api/categoria/listar')
       .then(response => setCategorias(response.data))
       .catch(error => console.error('Error al obtener categorias:', error));
   }, []);
@@ -190,7 +190,7 @@ const Productos = ({ darkMode }) => {
         formData.append('imagenes', nuevoProducto.imagenFileExtra2);
       }
 
-      axios.post("http://localhost:8080/api/producto/registrar", formData)
+      api.post("/api/producto/registrar", formData)
         .then(response => {
           const nuevoProductoConID = {
             ...response.data,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Row, Col, Form, Button } from 'react-bootstrap';
 import Estrellas from './Estrellas';
-import axios from 'axios';
+import api from '../services/api';
 import "../estilos/CajaComentarios.css";
 
 const FormularioComentario = ({ onSubmit }) => {
@@ -30,7 +30,7 @@ const FormularioComentario = ({ onSubmit }) => {
       };
 
       try {
-        const response = await axios.post('http://localhost:8080/api/comentarios/registrar', commentData);
+        const response = await api.post('/api/comentarios/registrar', commentData);
         console.log('Comentario enviado:', response.data);
         onSubmit(response.data);
         setNewComment('');

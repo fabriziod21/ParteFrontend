@@ -13,7 +13,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import axios from 'axios';
+import api from '../services/api';
 import { Modal } from 'react-bootstrap';
 import {
   LayoutDashboard,
@@ -70,7 +70,7 @@ const Dashboard = ({ darkMode }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/pedido/listarPedMes');
+        const response = await api.get('/api/pedido/listarPedMes');
         const dataFromBackend = response.data;
 
         const formattedData = dataFromBackend.map(item => {
@@ -107,7 +107,7 @@ const Dashboard = ({ darkMode }) => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/pedido/listarPedidos');
+        const response = await api.get('/api/pedido/listarPedidos');
         const mappedOrders = response.data.map(order => ({
           id: order.idPedido,
           idUsu: order.idUsuario,
@@ -360,8 +360,8 @@ const Dashboard = ({ darkMode }) => {
             </div>
           </div>
 
-          <div style={{ height: '350px' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: '350px', width: '100%', minWidth: '0' }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
@@ -427,8 +427,8 @@ const Dashboard = ({ darkMode }) => {
             Distribucion actual
           </p>
 
-          <div style={{ height: '220px' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: '220px', width: '100%', minWidth: '0' }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <PieChart>
                 <Pie
                   data={pieData}

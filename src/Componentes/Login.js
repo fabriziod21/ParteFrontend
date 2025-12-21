@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle, FiLogIn, FiWatch } from 'react-icons/fi';
 import '../estilos/Login.css';
@@ -28,11 +28,7 @@ const Login = ({ onLogin }) => {
     };
 
     try {
-      const response = await axios.post('http://localhost:8080/api/usuarios/login', loginData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await api.post('/api/usuarios/login', loginData);
 
       const user = response.data;
       sessionStorage.setItem('user', JSON.stringify(user));

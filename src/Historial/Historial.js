@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import "../estilos/Historial.css";
 import { Modal } from 'react-bootstrap';
 
@@ -30,7 +30,7 @@ export function Historial() {
     if (!orderToCancel) return;
 
     try {
-      const response = await axios.put(`http://localhost:8080/api/pedido/cancelar/${orderToCancel}`);
+      const response = await api.put(`/api/pedido/cancelar/${orderToCancel}`);
       if (response.status === 200) {
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
@@ -64,7 +64,7 @@ export function Historial() {
         const user = JSON.parse(userData);
         const userId = user.idUsuario;
 
-        const response = await axios.get('http://localhost:8080/api/pedido/listar');
+        const response = await api.get('/api/pedido/listar');
         const fetchedOrders = response.data;
 
         const userOrders = fetchedOrders.filter(order => order.idUsuario === userId);

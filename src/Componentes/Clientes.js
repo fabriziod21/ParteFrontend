@@ -23,7 +23,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import axios from 'axios';
+import api from '../services/api';
 
 // Register the necessary components
 ChartJS.register(
@@ -71,8 +71,8 @@ const Clientes = () => {
     );
 
     // Llamamos al backend para actualizar el estado del usuario
-    axios
-      .patch(`http://localhost:8080/api/usuarios/actualizar/${selectedUserId}`)
+    api
+      .patch(`/api/usuarios/actualizar/${selectedUserId}`)
       .then((response) => {
         console.log('Estado actualizado correctamente:', response.data);
       })
@@ -116,8 +116,8 @@ const Clientes = () => {
     );
   
     // Llamamos a la API para actualizar el rol del usuario en el backend
-    axios
-      .put(`http://localhost:8080/api/usuarios/actualizarRol/${id}`, { rol: newRole })
+    api
+      .put(`/api/usuarios/actualizarRol/${id}`, { rol: newRole })
       .then((response) => {
         console.log('Rol actualizado correctamente:', response.data);
         setOpenSnackbar(true); // Mostrar mensaje de éxito
@@ -232,8 +232,8 @@ const Clientes = () => {
   ];
 
   useEffect(() => {
-    axios
-      .get('http://localhost:8080/api/usuarios/listar')
+    api
+      .get('/api/usuarios/listar')
       .then((response) => {
         setRows(response.data);
       })
@@ -241,8 +241,8 @@ const Clientes = () => {
         console.error('Error al obtener los usuarios:', error);
       });
 
-    axios
-      .get('http://localhost:8080/api/usuarios/devolverEstadisticas')
+    api
+      .get('/api/usuarios/devolverEstadisticas')
       .then((response) => {
         setVisitasData(response.data);
       })

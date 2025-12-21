@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import axios from 'axios';
+import api from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Componente para mostrar las estrellas
@@ -20,7 +20,7 @@ const Coments = ({ darkMode }) => {
 
   // Cargar comentarios desde el backend
   useEffect(() => {
-    axios.get('http://localhost:8080/api/comentarios/listar')
+    api.get('/api/comentarios/listar')
       .then(response => setComments(response.data))
       .catch(error => console.error('Error cargando comentarios:', error));
   }, []);
@@ -40,7 +40,7 @@ const Coments = ({ darkMode }) => {
       return;
     }
   
-    axios.patch(`http://localhost:8080/api/comentarios/actualizar/${id}`)
+    api.patch(`/api/comentarios/actualizar/${id}`)
       .then(() => {
         setComments(prevComments => {
           const updatedComments = prevComments.map(comment =>

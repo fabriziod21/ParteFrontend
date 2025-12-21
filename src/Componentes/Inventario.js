@@ -10,7 +10,7 @@ import {
   ReferenceLine,
   Legend
 } from "recharts";
-import axios from "axios";
+import api from "../services/api";
 import img from "../imagenes/cvv.jpeg";
 import {
   Package,
@@ -33,8 +33,8 @@ function Inventario({ darkMode }) {
 
   useEffect(() => {
     setLoading(true);
-    axios
-      .get("http://localhost:8080/api/producto/listar")
+    api
+      .get("/api/producto/listar")
       .then((response) => {
         setProductos(response.data);
         if (response.data.length > 0) {
@@ -50,8 +50,8 @@ function Inventario({ darkMode }) {
 
   useEffect(() => {
     if (productoSeleccionado) {
-      axios
-        .get(`http://localhost:8080/api/kardex/recuperar/${productoSeleccionado.idProducto}`)
+      api
+        .get(`/api/kardex/recuperar/${productoSeleccionado.idProducto}`)
         .then((response) => {
           setMovimientos(response.data);
         })
