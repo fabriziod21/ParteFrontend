@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api, { API_URL } from '../services/api';
-import io from "socket.io-client";
+import api from '../services/api';
 import {
   Package,
   Plus,
@@ -23,8 +22,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-
-const socket = io(API_URL);
 
 const Productos = ({ darkMode }) => {
   const [productos, setProductos] = useState([]);
@@ -53,6 +50,7 @@ const Productos = ({ darkMode }) => {
 
   const [proveedores, setProveedores] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchProductos = () => {
@@ -144,12 +142,8 @@ const Productos = ({ darkMode }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const horaActual = new Date().getTime();
 
-    if (ultimoEnvio && horaActual - ultimoEnvio < 15000) {
-      alert("Debes esperar 15 segundos antes de registrar otro producto.");
-      return;
-    }
+    if (isSubmitting) return;
 
     if (
       nuevoProducto.nombre &&
@@ -161,6 +155,7 @@ const Productos = ({ darkMode }) => {
       nuevoProducto.stockMinimo &&
       nuevoProducto.stockMaximo
     ) {
+      setIsSubmitting(true);
       const productoAEnviar = {
         nombre: nuevoProducto.nombre,
         descripcion: nuevoProducto.descripcion || "Descripcion del producto",
@@ -178,7 +173,7 @@ const Productos = ({ darkMode }) => {
       };
 
       const formData = new FormData();
-      formData.append('producto', new Blob([JSON.stringify(productoAEnviar)], { type: 'application/json' }));
+      formData.append('producto', JSON.stringify(productoAEnviar));
 
       if (nuevoProducto.imagenFile) {
         formData.append('imagenes', nuevoProducto.imagenFile);
@@ -190,9 +185,12 @@ const Productos = ({ darkMode }) => {
         formData.append('imagenes', nuevoProducto.imagenFileExtra2);
       }
 
+      console.log("Producto JSON:", JSON.stringify(productoAEnviar));
+      console.log("Imagen:", nuevoProducto.imagenFile?.name);
+
       api.post("/api/producto/registrar", formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
         .then(response => {
           const nuevoProductoConID = {
             id: response.data.idProducto || response.data.id,
@@ -225,10 +223,12 @@ const Productos = ({ darkMode }) => {
             categorias: '',
           });
 
-          setUltimoEnvio(horaActual);
+          setIsSubmitting(false);
         })
         .catch(error => {
           console.error("Error al registrar el producto:", error);
+          console.error("Respuesta del servidor:", error.response?.data);
+          setIsSubmitting(false);
         });
     }
   };
@@ -785,15 +785,27 @@ const Productos = ({ darkMode }) => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-3 py-4 rounded-xl font-semibold transition-all hover:scale-[1.02]"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-3 py-4 rounded-xl font-semibold transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{
-                background: 'linear-gradient(135deg, #d4af37 0%, #b8962e 100%)',
+                background: isSubmitting
+                  ? 'linear-gradient(135deg, #888 0%, #666 100%)'
+                  : 'linear-gradient(135deg, #d4af37 0%, #b8962e 100%)',
                 color: '#0a0a0a',
-                boxShadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
+                boxShadow: isSubmitting ? 'none' : '0 8px 25px rgba(212, 175, 55, 0.3)'
               }}
             >
-              <Plus size={20} />
-              Registrar Producto
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
+                  Registrando...
+                </>
+              ) : (
+                <>
+                  <Plus size={20} />
+                  Registrar Producto
+                </>
+              )}
             </button>
           </form>
         </div>

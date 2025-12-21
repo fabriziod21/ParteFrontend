@@ -1,5 +1,9 @@
 /* ========== Luxury Navbar ========== */
 .luxury-navbar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
   background: rgba(10, 10, 10, 0.95) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

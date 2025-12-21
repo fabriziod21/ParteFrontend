@@ -5,6 +5,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee+Tint&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Teko:wght@300..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
+/* ========== Global Reset for Scroll ========== */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+html {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-y: auto;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-container {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Prevent double scrollbars on homepage */
+.home-wrapper {
+  overflow: visible !important;
+}
+
+/* Add padding for fixed navbar */
+.main-content {
+  padding-top: 70px;
+}
+
+/* Homepage doesn't need extra padding since hero is fullscreen */
+.home-wrapper {
+  margin-top: -70px;
+}
+
 /* ========== Variables CSS ========== */
 :root {
   --primary-gold: #d4af37;
