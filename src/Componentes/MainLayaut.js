@@ -16,8 +16,10 @@ const MainLayout = ({ user, onLogin, onLogout, onAddToCart }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const noNavbarRoutes = ['/login', '/registro', '/adminhomepage', '/reports', '/settings'];
-  const shouldShowNavbar = !noNavbarRoutes.includes(location.pathname);
+  const noNavbarRoutes = ['/login', '/registro', '/resumen'];
+  const noNavbarPrefixes = ['/adminhomepage'];
+  const shouldShowNavbar = !noNavbarRoutes.includes(location.pathname) &&
+    !noNavbarPrefixes.some(prefix => location.pathname.startsWith(prefix));
 
   useEffect(() => {
     setLoading(true);
@@ -66,7 +68,7 @@ const MainLayout = ({ user, onLogin, onLogout, onAddToCart }) => {
     <div className="app-container">
       {shouldShowNavbar && <Navig cartItems={cartItems} onCartShow={handleCartShow} onLogout={onLogout} user={user} />}
       
-      <main className={`main-content ${loading ? 'hidden' : ''}`}>
+      <main className={`main-content ${shouldShowNavbar ? 'with-navbar' : ''} ${loading ? 'hidden' : ''}`}>
         <Outlet />
       </main>
 

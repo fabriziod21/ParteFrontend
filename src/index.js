@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
 import Navig from './Componentes/Navig';
-import Registro from './Componentes/Registro';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Footer from './Componentes/Footer';
 import { Catalogo } from './Catalogo/Catalogo';
@@ -13,7 +12,7 @@ import CartOffCanvas from './Componentes/CartOfCanvas';
 import "./estilos/NavButton.css"
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "./index.css"
-import Login from './Componentes/Login';
+import AuthPage from './Componentes/AuthPage';
 import AdminHomePage from './Componentes/AdminHomePage';
 import 'aos/dist/aos.css';
 import { ThemeProvider } from './Componentes/ThemeContext';
@@ -22,6 +21,7 @@ import "slick-carousel/slick/slick-theme.css";
 import DetallesProducto from './Componentes/DetallesProducto';
 import Resumen from './Componentes/Resumen';
 import HomePage from './Componentes/HomePage';
+import Historia from './Componentes/Historia';
 
 
 
@@ -60,10 +60,7 @@ const App = () => {
   // Manejar el loading
   useEffect(() => {
     const loadingRoutes = [
-
-
       '/catalogo',
-      '/registro',
       '/historial',
     ];
 
@@ -181,9 +178,10 @@ const App = () => {
                 <Route path="/" element={<Navigate to="/adminhomepage/dashboard" />} />
                 <Route path="/homepage" element={<HomePage />} />
                 <Route path="/catalogo" element={<Catalogo onAddToCart={handleAddToCart}  />} />
-                <Route path="/registro" element={<Registro />} />
+                <Route path="/login" element={<AuthPage onLogin={handleLogin} />} />
+                <Route path="/registro" element={<AuthPage onLogin={handleLogin} />} />
                 <Route path="/historial" element={<Historial />} />
-                <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                <Route path="/historia" element={<Historia />} />
                 <Route path='/resumen' element={<Resumen/>} />
                 <Route path="/detalles/:id" element={<DetallesProducto onAddToCart={handleAddToCart}  />} />
                 {/* Rutas de administración */}

@@ -115,10 +115,10 @@ function Navig({ user, cartItems, onCartShow, onCartClose, onLogout }) {
               </Nav.Link>
               <Nav.Link
                 as={Link}
-                to="/homepage#contacto"
-                className="nav-link-custom"
+                to="/historia"
+                className={`nav-link-custom ${isActive('/historia') ? 'active' : ''}`}
               >
-                <span className="link-text">Contacto</span>
+                <span className="link-text">Historia</span>
                 <span className="link-underline"></span>
               </Nav.Link>
             </Nav>

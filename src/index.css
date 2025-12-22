@@ -36,13 +36,23 @@ body {
   overflow: visible !important;
 }
 
-/* Add padding for fixed navbar */
-.main-content {
+/* Add padding for fixed navbar - only when navbar is visible */
+.main-content.with-navbar {
   padding-top: 70px;
 }
 
-/* Homepage doesn't need extra padding since hero is fullscreen */
-.home-wrapper {
+/* Homepage hero is fullscreen - compensate navbar padding only when navbar exists */
+.main-content.with-navbar .home-wrapper {
+  margin-top: -70px;
+}
+
+/* Historial - navbar should overlay the hero top area */
+.main-content.with-navbar .hist-container {
+  margin-top: -70px;
+}
+
+/* Historia - fullscreen hero like homepage */
+.main-content.with-navbar .historia-container {
   margin-top: -70px;
 }
 
