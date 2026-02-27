@@ -7,7 +7,6 @@ import {
   Users,
   MessageCircle,
   FileText,
-  Package,
   Sun,
   Moon,
   Bell,
@@ -22,7 +21,6 @@ import {
   Edit3,
   Save,
   X,
-  Watch,
   Truck,
   Tags,
   FileSpreadsheet,
@@ -39,8 +37,6 @@ import Proveedores from './Proveedores';
 import Categorias from './Categorias';
 import Reports from './Reports';
 import Modal from 'react-bootstrap/Modal';
-import img from '../imagenes/sd.jpeg';
-
 const AdminHomePage = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);

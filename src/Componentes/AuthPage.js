@@ -288,7 +288,7 @@ const AuthPage = ({ onLogin }) => {
                   <span className="checkmark"></span>
                   <span>Recordarme</span>
                 </label>
-                <a href="#" className="forgot-link">Olvidaste tu contrasena?</a>
+                <button type="button" className="forgot-link">Olvidaste tu contrasena?</button>
               </div>
 
               {loginData.error && (

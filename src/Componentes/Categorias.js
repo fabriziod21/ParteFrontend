@@ -23,25 +23,18 @@ import {
   Trash2,
   Package,
   TrendingUp,
-  Eye,
   X,
   ChevronLeft,
   ChevronRight,
   Layers,
   Grid3X3,
   BarChart2,
-  Hash,
-  FileText,
-  Image,
-  Palette,
   CheckCircle,
   XCircle,
-  AlertCircle,
   FolderOpen,
   Star,
   ShoppingBag,
-  DollarSign,
-  Activity
+  DollarSign
 } from 'lucide-react';
 
 const Categorias = ({ darkMode }) => {
@@ -50,7 +43,7 @@ const Categorias = ({ darkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('todos');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const [itemsPerPage] = useState(8);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedCategoria, setSelectedCategoria] = useState(null);
