@@ -7,8 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
-  Legend
+  ReferenceLine
 } from "recharts";
 import api from "../services/api";
 import img from "../imagenes/cvv.jpeg";
@@ -29,7 +28,7 @@ function Inventario({ darkMode }) {
   const [productos, setProductos] = useState([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [movimientos, setMovimientos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);

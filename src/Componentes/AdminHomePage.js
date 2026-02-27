@@ -6,7 +6,6 @@ import {
   BarChart2,
   Users,
   MessageCircle,
-  FileText,
   Sun,
   Moon,
   Bell,

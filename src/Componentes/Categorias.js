@@ -84,6 +84,7 @@ const Categorias = ({ darkMode }) => {
 
   useEffect(() => {
     fetchCategorias();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCategorias = async () => {

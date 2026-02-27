@@ -223,7 +223,6 @@ export function Historial() {
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
-    const pages = [];
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);

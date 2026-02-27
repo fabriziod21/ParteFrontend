@@ -4,8 +4,6 @@ import {
   Area,
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -13,8 +11,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  Legend
+  ResponsiveContainer
 } from 'recharts';
 import api from '../services/api';
 import Swal from 'sweetalert2';
@@ -23,40 +20,23 @@ import {
   FileSpreadsheet,
   Download,
   FileText,
-  Calendar,
-  Filter,
-  TrendingUp,
-  TrendingDown,
   DollarSign,
   ShoppingCart,
   Users,
   Package,
-  Truck,
-  Star,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  ChevronDown,
   RefreshCw,
-  Eye,
-  Printer,
-  Mail,
-  BarChart2,
-  PieChart as PieChartIcon,
-  Activity,
   ArrowUpRight,
-  ArrowDownRight,
-  FileDown,
-  Table,
-  LayoutGrid
+  FileDown
 } from 'lucide-react';
 
 const Reports = ({ darkMode }) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ventas');
   const [dateRange, setDateRange] = useState('month');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  // eslint-disable-next-line no-unused-vars
+  const [startDate] = useState('');
+  // eslint-disable-next-line no-unused-vars
+  const [endDate] = useState('');
   const [exporting, setExporting] = useState(false);
 
   // Data states
@@ -83,6 +63,7 @@ const Reports = ({ darkMode }) => {
 
   useEffect(() => {
     fetchAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
   const fetchAllData = async () => {

@@ -44,7 +44,7 @@ const Checkout = () => {
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [cardLogo, setCardLogo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep] = useState(1);
 
   // Estados para el cálculo de envío
   const [shippingCost, setShippingCost] = useState(0);
@@ -56,7 +56,7 @@ const Checkout = () => {
   const [selectedPlace, setSelectedPlace] = useState(null);
 
   // Estados para el mapa interactivo
-  const [customerMarker, setCustomerMarker] = useState(null);
+  const [, setCustomerMarker] = useState(null);
 
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -86,6 +86,7 @@ const Checkout = () => {
       }, 100);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deliveryOption]);
 
   const initMap = () => {

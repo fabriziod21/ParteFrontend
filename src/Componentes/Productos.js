@@ -25,7 +25,6 @@ import {
 
 const Productos = ({ darkMode }) => {
   const [productos, setProductos] = useState([]);
-  const [ultimoEnvio, setUltimoEnvio] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);

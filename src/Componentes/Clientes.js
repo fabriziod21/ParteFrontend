@@ -3,8 +3,6 @@ import Swal from 'sweetalert2';
 import api from '../services/api';
 import LoadingScreen from './LoadingScreen';
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -19,7 +17,6 @@ import {
 import {
   Users,
   Search,
-  Filter,
   UserCheck,
   UserX,
   Shield,
@@ -29,12 +26,8 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
   Eye,
-  Calendar,
-  Award,
   Crown,
-  UserCog,
   ChevronDown,
   Grid3X3,
   List

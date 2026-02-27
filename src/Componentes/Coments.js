@@ -11,8 +11,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  Legend
+  ResponsiveContainer
 } from 'recharts';
 import {
   MessageSquare,
@@ -28,11 +27,8 @@ import {
   XCircle,
   AlertCircle,
   TrendingUp,
-  Users,
   Award,
-  ThumbsUp,
-  ThumbsDown,
-  Sparkles
+  ThumbsUp
 } from 'lucide-react';
 
 // Componente para mostrar las estrellas mejorado

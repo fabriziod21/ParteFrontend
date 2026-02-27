@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -27,27 +25,20 @@ import {
   Mail,
   MapPin,
   Building2,
-  Package,
   DollarSign,
   TrendingUp,
-  Calendar,
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
   Eye,
   X,
-  FileText,
   Globe,
   User,
   Hash,
   CreditCard,
-  ShoppingBag,
   Star,
-  MoreVertical,
-  Download,
   Grid3X3,
   List
 } from 'lucide-react';
@@ -58,12 +49,11 @@ const Proveedores = ({ darkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('todos');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [itemsPerPage] = useState(6);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedProveedor, setSelectedProveedor] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [expandedCard, setExpandedCard] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
 
   const [formData, setFormData] = useState({
@@ -95,6 +85,7 @@ const Proveedores = ({ darkMode }) => {
 
   useEffect(() => {
     fetchProveedores();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProveedores = async () => {

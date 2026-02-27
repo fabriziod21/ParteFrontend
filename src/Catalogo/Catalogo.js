@@ -294,7 +294,6 @@ export function Catalogo({ onAddToCart }) {
   const minPrice = productos.length > 0 ? Math.min(...productos.map(p => p.precio || 0)) : 0;
 
   // Estadísticas rápidas
-  const totalStock = productos.reduce((acc, p) => acc + (p.stockActual || 0), 0);
   const inStockCount = productos.filter(p => (p.stockActual || 0) > 0).length;
 
   // Agrupar productos por categoría
