@@ -90,21 +90,8 @@ const Proveedores = ({ darkMode }) => {
   });
 
   // Datos para gráficas
-  const [comprasMensuales, setComprasMensuales] = useState([
-    { mes: 'Ene', compras: 12500 },
-    { mes: 'Feb', compras: 18200 },
-    { mes: 'Mar', compras: 15800 },
-    { mes: 'Abr', compras: 22400 },
-    { mes: 'May', compras: 19600 },
-    { mes: 'Jun', compras: 24300 }
-  ]);
-
-  const categoriaData = [
-    { name: 'Joyas', value: 45, color: '#d4af37' },
-    { name: 'Accesorios', value: 25, color: '#8b5cf6' },
-    { name: 'Materiales', value: 20, color: '#22c55e' },
-    { name: 'Otros', value: 10, color: '#3b82f6' }
-  ];
+  const [comprasMensuales, setComprasMensuales] = useState([]);
+  const [categoriaData, setCategoriaData] = useState([]);
 
   useEffect(() => {
     fetchProveedores();
@@ -113,147 +100,13 @@ const Proveedores = ({ darkMode }) => {
   const fetchProveedores = async () => {
     try {
       setLoading(true);
-      // Intentar obtener datos del backend
       const response = await api.get('/api/proveedor/listar');
-      if (response.data && response.data.length > 0) {
-        setProveedores(response.data);
-        updateStats(response.data);
-      } else {
-        // Datos de ejemplo si no hay datos
-        const ejemploProveedores = [
-          {
-            id: 1,
-            nombre: 'Joyería Elegante S.A.C.',
-            ruc: '20123456789',
-            email: 'ventas@joyeriaelegante.com',
-            telefono: '01-234-5678',
-            direccion: 'Av. La Marina 2500',
-            ciudad: 'Lima',
-            pais: 'Perú',
-            contacto: 'María García',
-            banco: 'BCP',
-            numeroCuenta: '123-456789-0-12',
-            estado: 'Activo',
-            totalCompras: 45600,
-            ultimaCompra: '2024-01-15',
-            productos: 24,
-            rating: 4.8
-          },
-          {
-            id: 2,
-            nombre: 'Gold Import Peru',
-            ruc: '20987654321',
-            email: 'contacto@goldimport.pe',
-            telefono: '01-987-6543',
-            direccion: 'Jr. Lampa 456',
-            ciudad: 'Lima',
-            pais: 'Perú',
-            contacto: 'Carlos López',
-            banco: 'Interbank',
-            numeroCuenta: '987-654321-0-98',
-            estado: 'Activo',
-            totalCompras: 78900,
-            ultimaCompra: '2024-01-18',
-            productos: 45,
-            rating: 4.5
-          },
-          {
-            id: 3,
-            nombre: 'Accesorios Premium',
-            ruc: '20456789123',
-            email: 'info@accesoriospremium.com',
-            telefono: '01-456-7890',
-            direccion: 'Calle Los Tulipanes 123',
-            ciudad: 'Arequipa',
-            pais: 'Perú',
-            contacto: 'Ana Rodríguez',
-            banco: 'BBVA',
-            numeroCuenta: '456-789123-0-45',
-            estado: 'Inactivo',
-            totalCompras: 23400,
-            ultimaCompra: '2023-12-20',
-            productos: 12,
-            rating: 3.9
-          },
-          {
-            id: 4,
-            nombre: 'Diamond Suppliers Int.',
-            ruc: '20789123456',
-            email: 'sales@diamondsuppliers.com',
-            telefono: '+1-555-123-4567',
-            direccion: '123 Diamond Ave',
-            ciudad: 'Miami',
-            pais: 'USA',
-            contacto: 'John Smith',
-            banco: 'Bank of America',
-            numeroCuenta: '789-123456-0-78',
-            estado: 'Activo',
-            totalCompras: 156800,
-            ultimaCompra: '2024-01-20',
-            productos: 67,
-            rating: 4.9
-          },
-          {
-            id: 5,
-            nombre: 'Perlas del Pacífico',
-            ruc: '20321654987',
-            email: 'ventas@perlaspacifico.pe',
-            telefono: '01-321-6549',
-            direccion: 'Av. Costanera 890',
-            ciudad: 'Callao',
-            pais: 'Perú',
-            contacto: 'Patricia Mendoza',
-            banco: 'Scotiabank',
-            numeroCuenta: '321-654987-0-32',
-            estado: 'Activo',
-            totalCompras: 34500,
-            ultimaCompra: '2024-01-10',
-            productos: 18,
-            rating: 4.2
-          }
-        ];
-        setProveedores(ejemploProveedores);
-        updateStats(ejemploProveedores);
-      }
+      const data = response.data || [];
+      setProveedores(data);
+      updateStats(data);
     } catch (error) {
       console.error('Error fetching proveedores:', error);
-      // Cargar datos de ejemplo en caso de error
-      const ejemploProveedores = [
-        {
-          id: 1,
-          nombre: 'Joyería Elegante S.A.C.',
-          ruc: '20123456789',
-          email: 'ventas@joyeriaelegante.com',
-          telefono: '01-234-5678',
-          direccion: 'Av. La Marina 2500',
-          ciudad: 'Lima',
-          pais: 'Perú',
-          contacto: 'María García',
-          estado: 'Activo',
-          totalCompras: 45600,
-          ultimaCompra: '2024-01-15',
-          productos: 24,
-          rating: 4.8
-        },
-        {
-          id: 2,
-          nombre: 'Gold Import Peru',
-          ruc: '20987654321',
-          email: 'contacto@goldimport.pe',
-          telefono: '01-987-6543',
-          direccion: 'Jr. Lampa 456',
-          ciudad: 'Lima',
-          pais: 'Perú',
-          contacto: 'Carlos López',
-          estado: 'Activo',
-          totalCompras: 78900,
-          ultimaCompra: '2024-01-18',
-          productos: 45,
-          rating: 4.5
-        }
-      ];
-      setProveedores(ejemploProveedores);
-      updateStats(ejemploProveedores);
+      setProveedores([]);
     } finally {
       setLoading(false);
     }
@@ -267,8 +120,35 @@ const Proveedores = ({ darkMode }) => {
       totalProveedores: data.length,
       proveedoresActivos: activos,
       comprasMes: totalCompras,
-      promedioEntrega: 3.5
+      promedioEntrega: data.length > 0 ? Math.round((data.reduce((acc, p) => acc + (p.tiempoEntrega || 3), 0) / data.length) * 10) / 10 : 0
     });
+
+    // Generar datos de compras mensuales desde proveedores
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const mesActual = new Date().getMonth();
+    const comprasChart = [];
+    for (let i = 5; i >= 0; i--) {
+      const idx = (mesActual - i + 12) % 12;
+      comprasChart.push({
+        mes: meses[idx],
+        compras: data.reduce((acc, p) => acc + Math.round((p.totalCompras || 0) / 6), 0)
+      });
+    }
+    setComprasMensuales(comprasChart);
+
+    // Generar datos de categoría desde proveedores
+    const colores = ['#d4af37', '#8b5cf6', '#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
+    const categoriasMap = {};
+    data.forEach(p => {
+      const cat = p.categoria || p.rubro || 'Otros';
+      categoriasMap[cat] = (categoriasMap[cat] || 0) + 1;
+    });
+    const catArray = Object.entries(categoriasMap).map(([name, value], i) => ({
+      name,
+      value,
+      color: colores[i % colores.length]
+    }));
+    setCategoriaData(catArray.length > 0 ? catArray : []);
   };
 
   const handleInputChange = (e) => {

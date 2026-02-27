@@ -9,5 +9,13 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  if (user.token) {
+    config.headers.Authorization = `Bearer ${user.token}`;
+  }
+  return config;
+});
+
 export { API_URL };
 export default api;

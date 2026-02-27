@@ -97,102 +97,25 @@ const Categorias = ({ darkMode }) => {
     try {
       setLoading(true);
       const response = await api.get('/api/categoria/listar');
-      if (response.data && response.data.length > 0) {
-        const mappedCategorias = response.data.map(cat => ({
-          id: cat.idCategoria || cat.id,
-          nombre: cat.nombreCategoria || cat.nombre,
-          descripcion: cat.descripcion || '',
-          color: cat.color || '#d4af37',
-          icono: cat.icono || 'Package',
-          estado: cat.estado || 'Activo',
-          orden: cat.orden || 1,
-          productos: cat.productos || Math.floor(Math.random() * 50) + 5,
-          ventas: cat.ventas || Math.floor(Math.random() * 100000) + 10000
-        }));
-        setCategorias(mappedCategorias);
-        updateStats(mappedCategorias);
-      } else {
-        loadExampleData();
-      }
+      const mappedCategorias = (response.data || []).map(cat => ({
+        id: cat.idCategoria || cat.id,
+        nombre: cat.nombreCategoria || cat.nombre,
+        descripcion: cat.descripcion || '',
+        color: cat.color || '#d4af37',
+        icono: cat.icono || 'Package',
+        estado: cat.estado || 'Activo',
+        orden: cat.orden || 1,
+        productos: cat.productos || 0,
+        ventas: cat.ventas || 0
+      }));
+      setCategorias(mappedCategorias);
+      updateStats(mappedCategorias);
     } catch (error) {
       console.error('Error fetching categorias:', error);
-      loadExampleData();
+      setCategorias([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadExampleData = () => {
-    const ejemploCategorias = [
-      {
-        id: 1,
-        nombre: 'Anillos',
-        descripcion: 'Anillos de compromiso, bodas y ocasiones especiales',
-        color: '#d4af37',
-        icono: 'Star',
-        estado: 'Activo',
-        orden: 1,
-        productos: 45,
-        ventas: 125600
-      },
-      {
-        id: 2,
-        nombre: 'Collares',
-        descripcion: 'Collares y cadenas de oro, plata y piedras preciosas',
-        color: '#8b5cf6',
-        icono: 'Layers',
-        estado: 'Activo',
-        orden: 2,
-        productos: 38,
-        ventas: 98400
-      },
-      {
-        id: 3,
-        nombre: 'Aretes',
-        descripcion: 'Aretes y pendientes para toda ocasión',
-        color: '#22c55e',
-        icono: 'Tags',
-        estado: 'Activo',
-        orden: 3,
-        productos: 52,
-        ventas: 87300
-      },
-      {
-        id: 4,
-        nombre: 'Pulseras',
-        descripcion: 'Pulseras y brazaletes elegantes',
-        color: '#3b82f6',
-        icono: 'Package',
-        estado: 'Activo',
-        orden: 4,
-        productos: 29,
-        ventas: 65200
-      },
-      {
-        id: 5,
-        nombre: 'Relojes',
-        descripcion: 'Relojes de lujo y accesorios',
-        color: '#ef4444',
-        icono: 'ShoppingBag',
-        estado: 'Activo',
-        orden: 5,
-        productos: 18,
-        ventas: 234500
-      },
-      {
-        id: 6,
-        nombre: 'Accesorios',
-        descripcion: 'Otros accesorios y complementos',
-        color: '#f59e0b',
-        icono: 'Grid3X3',
-        estado: 'Inactivo',
-        orden: 6,
-        productos: 15,
-        ventas: 23400
-      }
-    ];
-    setCategorias(ejemploCategorias);
-    updateStats(ejemploCategorias);
   };
 
   const updateStats = (data) => {

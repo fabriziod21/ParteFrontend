@@ -91,8 +91,6 @@ const Reports = ({ darkMode }) => {
       // Fetch ventas/pedidos data
       const pedidosResponse = await api.get('/api/pedido/listarPedidos');
       const pedidos = pedidosResponse.data || [];
-
-      // Process pedidos for different reports
       processPedidosData(pedidos);
 
       // Fetch clientes
@@ -100,7 +98,7 @@ const Reports = ({ darkMode }) => {
         const clientesResponse = await api.get('/api/usuario/listar');
         processClientesData(clientesResponse.data || []);
       } catch {
-        loadExampleClientesData();
+        setClientesData([]);
       }
 
       // Fetch productos
@@ -108,15 +106,34 @@ const Reports = ({ darkMode }) => {
         const productosResponse = await api.get('/api/producto/listar');
         processProductosData(productosResponse.data || []);
       } catch {
-        loadExampleProductosData();
+        setProductosData([]);
       }
 
-      // Load example compras data (proveedores)
-      loadExampleComprasData();
+      // Fetch compras (proveedores)
+      try {
+        const comprasResponse = await api.get('/api/proveedor/listar');
+        const proveedores = comprasResponse.data || [];
+        const mappedCompras = proveedores.map((p, i) => ({
+          id: p.id || i + 1,
+          proveedor: p.nombreProveedor || p.nombre || `Proveedor ${i + 1}`,
+          fecha: p.fechaUltimaCompra || '',
+          total: p.totalCompras || 0,
+          productos: p.cantidadProductos || 0,
+          estado: p.estado || 'Activo'
+        }));
+        setComprasData(mappedCompras);
+        setStats(prev => ({ ...prev, totalCompras: mappedCompras.reduce((acc, c) => acc + c.total, 0) }));
+      } catch {
+        setComprasData([]);
+      }
 
     } catch (error) {
       console.error('Error fetching data:', error);
-      loadAllExampleData();
+      setVentasData([]);
+      setClientesData([]);
+      setProductosData([]);
+      setComprasData([]);
+      setPedidosData([]);
     } finally {
       setLoading(false);
     }
@@ -158,14 +175,21 @@ const Reports = ({ darkMode }) => {
         mesNombre: new Date(item.mes + '-01').toLocaleString('es-ES', { month: 'short', year: '2-digit' })
       }));
 
-    setVentasData(ventasArray.length > 0 ? ventasArray : generateExampleVentasData());
+    setVentasData(ventasArray);
 
     // Calculate stats
     const totalVentas = pedidos.reduce((acc, p) => acc + (p.total || 0), 0);
+    // Calculate real growth based on last 2 months
+    let crecimiento = 0;
+    if (ventasArray.length >= 2) {
+      const ultimo = ventasArray[ventasArray.length - 1].total;
+      const penultimo = ventasArray[ventasArray.length - 2].total;
+      crecimiento = penultimo > 0 ? Math.round(((ultimo - penultimo) / penultimo) * 1000) / 10 : 0;
+    }
     setStats(prev => ({
       ...prev,
       totalVentas,
-      crecimiento: 12.5
+      crecimiento
     }));
   };
 
@@ -177,9 +201,9 @@ const Reports = ({ darkMode }) => {
       telefono: c.telefonoUsuario || c.telefono,
       estado: c.estadoUsuario || c.estado || 'Activo',
       rol: c.rolUsuario || c.rol || 'Cliente',
-      fechaRegistro: c.fechaRegistro || '2024-01-15',
-      compras: c.totalCompras || Math.floor(Math.random() * 10) + 1,
-      totalGastado: c.totalGastado || Math.floor(Math.random() * 5000) + 500
+      fechaRegistro: c.fechaRegistro || '',
+      compras: c.totalCompras || 0,
+      totalGastado: c.totalGastado || 0
     }));
     setClientesData(mappedClientes);
     setStats(prev => ({ ...prev, totalClientes: mappedClientes.length }));
@@ -191,80 +215,14 @@ const Reports = ({ darkMode }) => {
       nombre: p.nombreProducto || p.nombre,
       categoria: typeof p.categoria === 'object' ? (p.categoria?.nombre || 'General') : (p.categoria || 'General'),
       precio: p.precioProducto || p.precio,
-      stock: p.stock || Math.floor(Math.random() * 100),
-      vendidos: p.vendidos || Math.floor(Math.random() * 50),
+      stock: p.stock || 0,
+      vendidos: p.vendidos || 0,
       estado: p.estado || 'Disponible'
     }));
     setProductosData(mappedProductos);
     setStats(prev => ({ ...prev, totalProductos: mappedProductos.length }));
   };
 
-  const loadExampleClientesData = () => {
-    const ejemploClientes = [
-      { id: 1, nombre: 'María García López', email: 'maria@email.com', telefono: '987654321', estado: 'Activo', rol: 'Cliente', fechaRegistro: '2024-01-15', compras: 8, totalGastado: 2450 },
-      { id: 2, nombre: 'Carlos Rodríguez Pérez', email: 'carlos@email.com', telefono: '912345678', estado: 'Activo', rol: 'Cliente', fechaRegistro: '2024-02-20', compras: 5, totalGastado: 1890 },
-      { id: 3, nombre: 'Ana Martínez Flores', email: 'ana@email.com', telefono: '945678912', estado: 'Activo', rol: 'VIP', fechaRegistro: '2023-12-10', compras: 15, totalGastado: 8750 },
-      { id: 4, nombre: 'Luis Sánchez Torres', email: 'luis@email.com', telefono: '978912345', estado: 'Inactivo', rol: 'Cliente', fechaRegistro: '2024-03-05', compras: 2, totalGastado: 560 },
-      { id: 5, nombre: 'Patricia Díaz Vargas', email: 'patricia@email.com', telefono: '934567891', estado: 'Activo', rol: 'Cliente', fechaRegistro: '2024-01-28', compras: 6, totalGastado: 3200 }
-    ];
-    setClientesData(ejemploClientes);
-    setStats(prev => ({ ...prev, totalClientes: ejemploClientes.length }));
-  };
-
-  const loadExampleProductosData = () => {
-    const ejemploProductos = [
-      { id: 1, nombre: 'Anillo de Compromiso Diamante', categoria: 'Anillos', precio: 2500, stock: 15, vendidos: 28, estado: 'Disponible' },
-      { id: 2, nombre: 'Collar de Oro 18k', categoria: 'Collares', precio: 1800, stock: 22, vendidos: 45, estado: 'Disponible' },
-      { id: 3, nombre: 'Aretes de Perla', categoria: 'Aretes', precio: 450, stock: 50, vendidos: 67, estado: 'Disponible' },
-      { id: 4, nombre: 'Pulsera de Plata', categoria: 'Pulseras', precio: 320, stock: 35, vendidos: 52, estado: 'Disponible' },
-      { id: 5, nombre: 'Reloj de Oro Rosa', categoria: 'Relojes', precio: 4500, stock: 8, vendidos: 12, estado: 'Stock Bajo' },
-      { id: 6, nombre: 'Cadena de Oro', categoria: 'Collares', precio: 890, stock: 0, vendidos: 38, estado: 'Agotado' }
-    ];
-    setProductosData(ejemploProductos);
-    setStats(prev => ({ ...prev, totalProductos: ejemploProductos.length }));
-  };
-
-  const loadExampleComprasData = () => {
-    const ejemploCompras = [
-      { id: 1, proveedor: 'Joyería Elegante S.A.C.', fecha: '2024-01-15', total: 12500, productos: 24, estado: 'Recibido' },
-      { id: 2, proveedor: 'Gold Import Peru', fecha: '2024-01-18', total: 28900, productos: 45, estado: 'Recibido' },
-      { id: 3, proveedor: 'Diamond Suppliers Int.', fecha: '2024-01-20', total: 45600, productos: 18, estado: 'En Tránsito' },
-      { id: 4, proveedor: 'Perlas del Pacífico', fecha: '2024-01-25', total: 8700, productos: 32, estado: 'Recibido' },
-      { id: 5, proveedor: 'Accesorios Premium', fecha: '2024-01-28', total: 5400, productos: 15, estado: 'Pendiente' }
-    ];
-    setComprasData(ejemploCompras);
-    setStats(prev => ({ ...prev, totalCompras: ejemploCompras.reduce((acc, c) => acc + c.total, 0) }));
-  };
-
-  const generateExampleVentasData = () => {
-    return [
-      { mes: '2024-01', mesNombre: 'Ene 24', total: 45600, pedidos: 28 },
-      { mes: '2024-02', mesNombre: 'Feb 24', total: 52300, pedidos: 34 },
-      { mes: '2024-03', mesNombre: 'Mar 24', total: 48900, pedidos: 31 },
-      { mes: '2024-04', mesNombre: 'Abr 24', total: 61200, pedidos: 42 },
-      { mes: '2024-05', mesNombre: 'May 24', total: 58700, pedidos: 38 },
-      { mes: '2024-06', mesNombre: 'Jun 24', total: 72400, pedidos: 48 }
-    ];
-  };
-
-  const loadAllExampleData = () => {
-    setVentasData(generateExampleVentasData());
-    loadExampleClientesData();
-    loadExampleProductosData();
-    loadExampleComprasData();
-    setPedidosData([
-      { id: 1, cliente: 'María García', email: 'maria@email.com', fecha: '2024-01-20', hora: '14:30', estado: 'Entregado', total: 1250, metodoPago: 'Tarjeta', productos: 3 },
-      { id: 2, cliente: 'Carlos López', email: 'carlos@email.com', fecha: '2024-01-21', hora: '10:15', estado: 'Pendiente', total: 890, metodoPago: 'Transferencia', productos: 2 },
-      { id: 3, cliente: 'Ana Torres', email: 'ana@email.com', fecha: '2024-01-22', hora: '16:45', estado: 'Entregado', total: 2340, metodoPago: 'Tarjeta', productos: 4 }
-    ]);
-    setStats({
-      totalVentas: 339100,
-      totalCompras: 101100,
-      totalClientes: 5,
-      totalProductos: 6,
-      crecimiento: 12.5
-    });
-  };
 
   // CSV Export Functions
   const exportToCSV = (data, filename, headers) => {

@@ -352,16 +352,19 @@ const Dashboard = ({ darkMode }) => {
     { dia: 'Dom', ventas: Math.round(stats.pedidosHoy * 1.5) }
   ];
 
-  // Hourly data (peak hours)
-  const hourlyData = [
-    { hora: '10am', pedidos: 5 },
-    { hora: '12pm', pedidos: 12 },
-    { hora: '2pm', pedidos: 8 },
-    { hora: '4pm', pedidos: 15 },
-    { hora: '6pm', pedidos: 22 },
-    { hora: '8pm', pedidos: 18 },
-    { hora: '10pm', pedidos: 10 }
-  ];
+  // Hourly data derived from order data
+  const hourlyData = (() => {
+    const horas = ['10am', '12pm', '2pm', '4pm', '6pm', '8pm', '10pm'];
+    const horaRanges = [[10, 11], [12, 13], [14, 15], [16, 17], [18, 19], [20, 21], [22, 23]];
+    return horas.map((hora, i) => {
+      const count = orderData.filter(o => {
+        if (!o.hora) return false;
+        const h = parseInt(o.hora.split(':')[0], 10);
+        return h >= horaRanges[i][0] && h <= horaRanges[i][1];
+      }).length;
+      return { hora, pedidos: count };
+    });
+  })();
 
   const cardStyle = {
     background: darkMode
