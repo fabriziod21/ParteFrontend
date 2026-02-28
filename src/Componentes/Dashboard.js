@@ -16,7 +16,7 @@ import {
   Line
 } from 'recharts';
 import api from '../services/api';
-import { Modal } from 'react-bootstrap';
+
 import LoadingScreen from './LoadingScreen';
 import {
   LayoutDashboard,
@@ -53,7 +53,6 @@ import {
 const Dashboard = ({ darkMode }) => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderData, setOrderData] = useState([]);
   const [orderSearchTerm, setOrderSearchTerm] = useState('');
   const [chartData, setChartData] = useState([]);
@@ -79,12 +78,10 @@ const Dashboard = ({ darkMode }) => {
     comentariosNuevos: 0
   });
 
-  const openModal = (order) => {
+  const openOrderDetail = (order) => {
     setSelectedOrder(order);
-    setIsModalOpen(true);
   };
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeOrderDetail = () => {
     setSelectedOrder(null);
   };
 
@@ -157,10 +154,10 @@ const Dashboard = ({ darkMode }) => {
         const mappedOrders = ordersResponse.data.map(order => ({
           id: order.idPedido,
           idUsu: order.idUsuario,
-          cliente: `${order.nombreUsuario} ${order.apellidoUsuario}`,
-          correo: order.correoUsuario,
-          telefono: order.telefonoUsuario,
-          direccion: order.direccionUsuario,
+          cliente: `${order.nombre || ''} ${order.apellido || ''}`.trim(),
+          correo: order.correo,
+          telefono: order.telefono,
+          direccion: order.direccion,
           estadoUsu: order.estadoUsuario,
           metodoPago: order.metodoPago,
           fecha: order.fecha,
@@ -168,7 +165,12 @@ const Dashboard = ({ darkMode }) => {
           hora: order.hora,
           estado: order.estadoPedido,
           total: order.total,
-          productos: order.productos,
+          productos: (order.productos || []).map(p => ({
+            ...p,
+            nombre: p.nombreProducto || p.nombre,
+            precio: p.precioProducto || p.precio,
+            imagenes: p.imagenes || [],
+          })),
         }));
         setOrderData(mappedOrders);
 
@@ -1070,7 +1072,7 @@ const Dashboard = ({ darkMode }) => {
                     <span className="font-bold text-lg" style={{ color: '#d4af37' }}>S/.{order.total?.toFixed(2)}</span>
                   </td>
                   <td className="py-4 px-4 text-center">
-                    <button onClick={() => openModal(order)} className="p-2 rounded-lg transition-all hover:scale-105" style={{ background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#d4af37' }}>
+                    <button onClick={() => openOrderDetail(order)} className="p-2 rounded-lg transition-all hover:scale-105" style={{ background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#d4af37' }}>
                       <Eye size={18} />
                     </button>
                   </td>
@@ -1145,94 +1147,160 @@ const Dashboard = ({ darkMode }) => {
         )}
       </div>
 
-      {/* Order Detail Modal */}
-      <Modal show={isModalOpen} onHide={closeModal} centered size="lg">
-        <div style={{ background: darkMode ? '#0a0a0a' : '#ffffff', borderRadius: '16px', overflow: 'hidden' }}>
-          <div className="flex items-center justify-between p-6" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-            <div>
-              <h3 className="text-xl font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-                Detalles del Pedido <span style={{ color: '#d4af37' }}>#{selectedOrder?.id}</span>
-              </h3>
-              <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                {selectedOrder?.fecha} - {selectedOrder?.hora}
-              </p>
+      {/* Order Detail Inline */}
+      {selectedOrder && (
+        <div className="rounded-2xl mt-6 overflow-hidden" style={cardStyle}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 lg:px-8 py-5" style={{
+            background: darkMode
+              ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%)'
+              : 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%)',
+            borderBottom: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.1)'}`
+          }}>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{
+                background: 'linear-gradient(135deg, #d4af37 0%, #b8960c 100%)',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
+              }}>
+                <ShoppingCart size={22} style={{ color: '#0a0a0a' }} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold m-0" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
+                  Detalles del Pedido <span style={{ color: '#d4af37' }}>#{selectedOrder.id}</span>
+                </h3>
+                <p className="text-sm m-0 mt-1" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                  {selectedOrder.fecha} - {selectedOrder.hora}
+                </p>
+              </div>
             </div>
-            <button onClick={closeModal} className="p-2 rounded-lg transition-all hover:scale-105" style={{ background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
-              <X size={20} style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }} />
+            <button onClick={closeOrderDetail} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105" style={{
+              background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+              border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+            }}>
+              <X size={20} style={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }} />
             </button>
           </div>
 
-          <div className="p-6">
-            {selectedOrder && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="p-5 rounded-xl" style={{ background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-                    <h4 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#d4af37' }}>
-                      <User size={18} /> Información del Cliente
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <User size={16} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
-                        <span style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.cliente}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Mail size={16} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
-                        <span style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.correo}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Phone size={16} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
-                        <span style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.telefono}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <MapPin size={16} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
-                        <span style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.direccion}</span>
-                      </div>
+          <div className="px-6 lg:px-8 py-6">
+            {/* Info Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+              {/* Cliente */}
+              <div className="p-5 rounded-2xl" style={{
+                background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+              }}>
+                <h4 className="font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
+                  <User size={16} /> Cliente
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                      <User size={14} style={{ color: '#d4af37' }} />
                     </div>
+                    <span className="text-sm" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.cliente}</span>
                   </div>
-
-                  <div className="p-5 rounded-xl" style={{ background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-                    <h4 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#d4af37' }}>
-                      <ShoppingCart size={18} /> Información del Pedido
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Método de Pago</span>
-                        <span className="flex items-center gap-2" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-                          <CreditCard size={16} /> {selectedOrder.metodoPago}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Estado</span>
-                        <StatusBadge status={selectedOrder.estado} />
-                      </div>
-                      <div className="flex items-center justify-between pt-3" style={{ borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-                        <span className="font-semibold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>Total</span>
-                        <span className="text-2xl font-bold" style={{ color: '#d4af37' }}>S/.{selectedOrder.total?.toFixed(2)}</span>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                      <Mail size={14} style={{ color: '#d4af37' }} />
                     </div>
+                    <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)', wordBreak: 'break-all' }}>{selectedOrder.correo || 'No registrado'}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                      <Phone size={14} style={{ color: '#d4af37' }} />
+                    </div>
+                    <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>{selectedOrder.telefono || 'No registrado'}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                      <MapPin size={14} style={{ color: '#d4af37' }} />
+                    </div>
+                    <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>{selectedOrder.direccion || 'No registrada'}</span>
                   </div>
                 </div>
+              </div>
 
-                <h4 className="font-semibold mb-4" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-                  Productos ({selectedOrder.productos?.length || 0})
+              {/* Pedido */}
+              <div className="p-5 rounded-2xl" style={{
+                background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+              }}>
+                <h4 className="font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
+                  <ShoppingCart size={16} /> Pedido
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm flex-shrink-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Método de Pago</span>
+                    <span className="flex items-center gap-2 text-sm font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
+                      <CreditCard size={14} className="flex-shrink-0" style={{ color: '#d4af37' }} /> {selectedOrder.metodoPago}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm flex-shrink-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Estado</span>
+                    <StatusBadge status={selectedOrder.estado} />
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm flex-shrink-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Productos</span>
+                    <span className="text-sm font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.productos?.length || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 pt-3 mt-1" style={{ borderTop: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0,0,0,0.08)'}` }}>
+                    <span className="font-semibold text-sm flex-shrink-0" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>Total</span>
+                    <span className="text-2xl font-bold" style={{ color: '#d4af37' }}>S/.{selectedOrder.total?.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Productos */}
+              <div className="p-5 rounded-2xl md:col-span-2 lg:col-span-1" style={{
+                background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+              }}>
+                <h4 className="font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
+                  <Package size={16} /> Productos ({selectedOrder.productos?.length || 0})
+                </h4>
+                <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
                   {selectedOrder.productos?.map((producto, index) => (
-                    <div key={index} className="flex items-center gap-4 p-4 rounded-xl" style={{ background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-                      <img src={producto.imagenes?.[0]} alt={producto.nombre} className="w-16 h-16 rounded-lg object-cover" style={{ border: '1px solid rgba(212, 175, 55, 0.2)' }} />
-                      <div className="flex-1">
-                        <p className="font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{producto.nombre}</p>
-                        <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>S/.{producto.precio} x {producto.cantidad}</p>
+                    <div key={index} className="flex items-center gap-3 p-3 rounded-xl" style={{
+                      background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`
+                    }}>
+                      <img
+                        src={producto.imagenes?.[0] || ''}
+                        alt={producto.nombre}
+                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                        style={{ border: '1px solid rgba(212, 175, 55, 0.2)' }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm mb-1 truncate" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{producto.nombre}</p>
+                        <p className="text-xs m-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          S/.{Number(producto.precio || 0).toFixed(2)} x {producto.cantidad} und.
+                        </p>
                       </div>
-                      <p className="font-bold" style={{ color: '#d4af37' }}>S/.{(producto.precio * producto.cantidad).toFixed(2)}</p>
+                      <p className="font-bold m-0 flex-shrink-0" style={{ color: '#d4af37' }}>
+                        S/.{(Number(producto.precio || 0) * producto.cantidad).toFixed(2)}
+                      </p>
                     </div>
                   ))}
                 </div>
-              </>
-            )}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 lg:px-8 py-4 flex justify-end" style={{
+            background: darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.02)',
+            borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`
+          }}>
+            <button onClick={closeOrderDetail} className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all hover:scale-105" style={{
+              background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+              border: `1px solid ${darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
+              color: darkMode ? '#ffffff' : '#1a1a1a'
+            }}>
+              Cerrar
+            </button>
           </div>
         </div>
-      </Modal>
+      )}
     </div>
   );
 };

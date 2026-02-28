@@ -297,7 +297,8 @@ const Categorias = ({ darkMode }) => {
   const chartData = categorias.map(cat => ({
     nombre: cat.nombre,
     productos: cat.productos || 0,
-    ventas: cat.ventas || 0
+    ventas: cat.ventas || 0,
+    color: cat.color || '#d4af37'
   })).sort((a, b) => b.ventas - a.ventas).slice(0, 6);
 
   const pieData = categorias.map(cat => ({
@@ -526,7 +527,11 @@ const Categorias = ({ darkMode }) => {
                 <XAxis type="number" tick={{ fill: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(value) => `S/.${(value / 1000).toFixed(0)}k`} />
                 <YAxis dataKey="nombre" type="category" tick={{ fill: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                <Bar dataKey="ventas" name="Ventas" radius={[0, 6, 6, 0]} fill="#d4af37" />
+                <Bar dataKey="ventas" name="Ventas" radius={[0, 6, 6, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`bar-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
