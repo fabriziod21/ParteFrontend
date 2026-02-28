@@ -2,18 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
+  ComposedChart,
+  Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
-  Cell,
-  LineChart,
-  Line
+  Cell
 } from 'recharts';
 import api from '../services/api';
 
@@ -41,13 +40,18 @@ import {
   ChevronLeft,
   ChevronRight,
   Target,
-  Bell,
   Activity,
   RefreshCw,
   Download,
-  ShoppingBag,
-  Flame,
-  Crown
+  Crown,
+  Loader2,
+  AlertTriangle,
+  Truck,
+  ArrowLeft,
+  FileText,
+  Ban,
+  RotateCcw,
+  Receipt
 } from 'lucide-react';
 
 const Dashboard = ({ darkMode }) => {
@@ -62,7 +66,8 @@ const Dashboard = ({ darkMode }) => {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [topProducts, setTopProducts] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
-  const [alerts, setAlerts] = useState([]);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null);
   const [stats, setStats] = useState({
     totalVentas: 0,
     totalPedidos: 0,
@@ -75,24 +80,117 @@ const Dashboard = ({ darkMode }) => {
     ventasMesAnterior: 0,
     pedidosMesAnterior: 0,
     metaMensual: 50000,
-    comentariosNuevos: 0
+    comentariosNuevos: 0,
+    totalVentasReales: 0,
+    cantidadVentas: 0,
+    totalIgv: 0,
+    totalSubtotal: 0
   });
 
-  const openOrderDetail = (order) => {
+  const [ventaInfo, setVentaInfo] = useState(null);
+  const [loadingVenta, setLoadingVenta] = useState(false);
+
+  const openOrderDetail = async (order) => {
     setSelectedOrder(order);
+    setVentaInfo(null);
+    if (order.estado === 'Entregado') {
+      setLoadingVenta(true);
+      try {
+        const res = await api.get(`/api/venta/porPedido/${order.id}`);
+        setVentaInfo(res.data);
+      } catch (e) { console.error(e); }
+      finally { setLoadingVenta(false); }
+    }
   };
   const closeOrderDetail = () => {
     setSelectedOrder(null);
+    setVentaInfo(null);
+    fetchAllData(false);
+  };
+
+  const handleStatusChange = (order, newStatus) => {
+    if (newStatus === order.estado) return;
+    const messages = {
+      'Entregado': `Al marcar como "Entregado", se generará automáticamente una venta con boleta. Esta acción no se puede revertir.`,
+      'Cancelado': `Al cancelar el pedido, se devolverá el stock de los productos. Esta acción no se puede revertir.`,
+      'En Proceso': `¿Deseas cambiar el estado del pedido #${order.id} a "En Proceso"?`,
+    };
+    setConfirmDialog({ order, newStatus, message: messages[newStatus] || `¿Cambiar estado a "${newStatus}"?` });
+  };
+
+  const handleAnularVenta = () => {
+    if (!ventaInfo) return;
+    setConfirmDialog({
+      order: selectedOrder,
+      newStatus: 'AnularVenta',
+      message: `Se anulará la venta ${ventaInfo.numeroComprobante}. Se devolverá el stock de los productos y el pedido volverá a estado "Pendiente". Esta acción quedará registrada.`
+    });
+  };
+
+  const confirmStatusChange = async () => {
+    if (!confirmDialog) return;
+    const { order, newStatus } = confirmDialog;
+    setUpdatingStatus(true);
+    try {
+      if (newStatus === 'AnularVenta') {
+        await api.put(`/api/venta/anular/${ventaInfo.idVenta}`);
+        setOrderData(prev => prev.map(o => o.id === order.id ? { ...o, estado: 'Pendiente', estadoP: 'Pendiente' } : o));
+        setSelectedOrder(prev => ({ ...prev, estado: 'Pendiente', estadoP: 'Pendiente' }));
+        setVentaInfo(prev => prev ? { ...prev, estado: 'Anulada' } : null);
+      } else {
+        await api.put(`/api/pedido/actualizarEstado/${order.id}`, { estado: newStatus });
+        setOrderData(prev => prev.map(o => o.id === order.id ? { ...o, estado: newStatus, estadoP: newStatus } : o));
+        setSelectedOrder(prev => ({ ...prev, estado: newStatus, estadoP: newStatus }));
+        if (newStatus === 'Entregado') {
+          try {
+            const res = await api.get(`/api/venta/porPedido/${order.id}`);
+            setVentaInfo(res.data);
+          } catch (e) { console.error(e); }
+        }
+      }
+      setConfirmDialog(null);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error al procesar');
+    } finally {
+      setUpdatingStatus(false);
+    }
   };
 
   // Fetch all data
-  useEffect(() => {
-    const fetchAllData = async () => {
+  const fetchAllData = async (showLoading = true) => {
       try {
-        setLoading(true);
+        if (showLoading) setLoading(true);
         // Fetch chart data
         const chartResponse = await api.get('/api/pedido/listarPedMes');
         const dataFromBackend = chartResponse.data;
+
+        // Fetch ventas reales
+        let ventasData = { totalVentas: 0, cantidadVentas: 0 };
+        let ventasPorMes = [];
+        try {
+          const [ventasRes, ventasMesRes] = await Promise.all([
+            api.get('/api/venta/totalVentas'),
+            api.get('/api/venta/ventasPorMes')
+          ]);
+          ventasData = ventasRes.data;
+          ventasPorMes = ventasMesRes.data;
+        } catch (e) {
+          console.log('Ventas endpoints no disponibles aún');
+        }
+
+        // Mapear ventas por mes para el gráfico
+        const ventasMesMap = {};
+        ventasPorMes.forEach(v => {
+          if (v.mes) {
+            const [y, m] = v.mes.split('-');
+            ventasMesMap[parseInt(m)] = {
+              totalVentas: v.totalVentas || 0,
+              totalSubtotal: v.totalSubtotal || 0,
+              totalIgv: v.totalIgv || 0,
+              cantidadVentas: v.cantidadVentas || 0
+            };
+          }
+        });
 
         const formattedData = dataFromBackend
           .filter(item => item.mes)
@@ -117,12 +215,15 @@ const Dashboard = ({ darkMode }) => {
             const fecha = new Date(yearNum, monthNum - 1);
             const mesNombre = fecha.toLocaleString('es-ES', { month: 'short' });
             const totalPedidos = item.total_pedidos || item.totalPedidos || 0;
+            const ventaMes = ventasMesMap[monthNum] || {};
 
             return {
               mes: mesNombre.charAt(0).toUpperCase() + mesNombre.slice(1),
               mesNum: monthNum,
-              ventas: totalPedidos,
-              ingresos: totalPedidos * 150
+              pedidos: totalPedidos,
+              ingresos: ventaMes.totalVentas || 0,
+              subtotal: ventaMes.totalSubtotal || 0,
+              igv: ventaMes.totalIgv || 0
             };
           })
           .filter(item => item !== null);
@@ -130,8 +231,8 @@ const Dashboard = ({ darkMode }) => {
         setChartData(formattedData);
 
         // Calculate stats
-        const total = formattedData.reduce((acc, curr) => acc + curr.ventas, 0);
-        const promedio = formattedData.length > 0 ? Math.round(total / formattedData.length) : 0;
+        const totalPedidos = formattedData.reduce((acc, curr) => acc + curr.pedidos, 0);
+        const promedio = formattedData.length > 0 ? Math.round(totalPedidos / formattedData.length) : 0;
 
         // Get current and previous month data for comparison
         const currentMonth = new Date().getMonth() + 1;
@@ -140,13 +241,15 @@ const Dashboard = ({ darkMode }) => {
 
         setStats(prev => ({
           ...prev,
-          totalPedidos: total,
+          totalPedidos: totalPedidos,
           promedioMensual: promedio,
-          totalVentas: total * 150,
+          totalVentas: ventasData.totalVentas || 0,
+          totalVentasReales: ventasData.totalVentas || 0,
+          cantidadVentas: ventasData.cantidadVentas || 0,
           ventasMesAnterior: prevMonthData ? prevMonthData.ingresos : 0,
-          pedidosMesAnterior: prevMonthData ? prevMonthData.ventas : 0,
+          pedidosMesAnterior: prevMonthData ? prevMonthData.pedidos : 0,
           ventasHoy: currentMonthData ? Math.round(currentMonthData.ingresos / 30) : 0,
-          pedidosHoy: currentMonthData ? Math.round(currentMonthData.ventas / 30) : 0
+          pedidosHoy: currentMonthData ? Math.round(currentMonthData.pedidos / 30) : 0
         }));
 
         // Fetch orders
@@ -216,32 +319,6 @@ const Dashboard = ({ darkMode }) => {
         }));
         setRecentActivity(activities);
 
-        // Generate alerts
-        const pendingOrders = mappedOrders.filter(o => o.estado === 'Pendiente').length;
-        const generatedAlerts = [];
-
-        if (pendingOrders > 0) {
-          generatedAlerts.push({
-            type: 'warning',
-            icon: Clock,
-            title: `${pendingOrders} pedidos pendientes`,
-            description: 'Requieren atención',
-            color: '#f59e0b'
-          });
-        }
-
-        if (sortedProducts.some(p => p.cantidad > 20)) {
-          generatedAlerts.push({
-            type: 'success',
-            icon: Flame,
-            title: 'Producto en tendencia',
-            description: sortedProducts[0]?.nombre,
-            color: '#22c55e'
-          });
-        }
-
-        setAlerts(generatedAlerts);
-
         setStats(prev => ({
           ...prev,
           clientesActivos: uniqueClients,
@@ -256,8 +333,9 @@ const Dashboard = ({ darkMode }) => {
       } finally {
         setLoading(false);
       }
-    };
+  };
 
+  useEffect(() => {
     fetchAllData();
   }, [dateFilter]);
 
@@ -297,7 +375,7 @@ const Dashboard = ({ darkMode }) => {
           </p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color, fontSize: '13px' }}>
-              {entry.name}: {entry.name === 'Ingresos' ? `S/.${entry.value.toLocaleString()}` : entry.value}
+              {entry.name}: {entry.name === 'Ingresos (S/.)' ? `S/.${entry.value.toLocaleString()}` : entry.value}
             </p>
           ))}
         </div>
@@ -311,6 +389,7 @@ const Dashboard = ({ darkMode }) => {
     const config = {
       'Entregado': { bg: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', icon: CheckCircle },
       'Pendiente': { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', icon: Clock },
+      'En Proceso': { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', icon: Truck },
       'Cancelado': { bg: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', icon: XCircle }
     };
     const { bg, color, icon: Icon } = config[status] || config['Pendiente'];
@@ -330,33 +409,10 @@ const Dashboard = ({ darkMode }) => {
   const pieData = [
     { name: 'Entregado', value: orderData.filter(o => o.estado === 'Entregado').length, color: '#22c55e' },
     { name: 'Pendiente', value: orderData.filter(o => o.estado === 'Pendiente').length, color: '#f59e0b' },
+    { name: 'En Proceso', value: orderData.filter(o => o.estado === 'En Proceso').length, color: '#3b82f6' },
     { name: 'Cancelado', value: orderData.filter(o => o.estado === 'Cancelado').length, color: '#ef4444' }
   ];
 
-  // Weekly data (simulated from monthly)
-  const weeklyData = [
-    { dia: 'Lun', ventas: Math.round(stats.pedidosHoy * 0.8) },
-    { dia: 'Mar', ventas: Math.round(stats.pedidosHoy * 1.2) },
-    { dia: 'Mie', ventas: Math.round(stats.pedidosHoy * 0.9) },
-    { dia: 'Jue', ventas: Math.round(stats.pedidosHoy * 1.4) },
-    { dia: 'Vie', ventas: Math.round(stats.pedidosHoy * 1.8) },
-    { dia: 'Sab', ventas: Math.round(stats.pedidosHoy * 2.2) },
-    { dia: 'Dom', ventas: Math.round(stats.pedidosHoy * 1.5) }
-  ];
-
-  // Hourly data derived from order data
-  const hourlyData = (() => {
-    const horas = ['10am', '12pm', '2pm', '4pm', '6pm', '8pm', '10pm'];
-    const horaRanges = [[10, 11], [12, 13], [14, 15], [16, 17], [18, 19], [20, 21], [22, 23]];
-    return horas.map((hora, i) => {
-      const count = orderData.filter(o => {
-        if (!o.hora) return false;
-        const h = parseInt(o.hora.split(':')[0], 10);
-        return h >= horaRanges[i][0] && h <= horaRanges[i][1];
-      }).length;
-      return { hora, pedidos: count };
-    });
-  })();
 
   const cardStyle = {
     background: darkMode
@@ -375,6 +431,325 @@ const Dashboard = ({ darkMode }) => {
 
   if (loading) {
     return <LoadingScreen darkMode={darkMode} message="Cargando dashboard..." />;
+  }
+
+  // ==================== VISTA DETALLE DEL PEDIDO ====================
+  if (selectedOrder) {
+    const subtotalPedido = parseFloat((selectedOrder.total / 1.18).toFixed(2));
+    const igvPedido = parseFloat((selectedOrder.total - subtotalPedido).toFixed(2));
+    const esEntregado = selectedOrder.estado === 'Entregado';
+    const esCancelado = selectedOrder.estado === 'Cancelado';
+    const esFinal = esEntregado || esCancelado;
+    const ventaActiva = ventaInfo && ventaInfo.estado === 'Completada';
+    const ventaAnulada = ventaInfo && ventaInfo.estado === 'Anulada';
+
+    return (
+      <div className="min-h-screen p-6 lg:p-8" style={{ background: darkMode ? '#0a0a0a' : '#f5f5f5' }}>
+        {/* Confirm Dialog */}
+        {confirmDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+            <div className="w-full max-w-md rounded-2xl p-6" style={cardStyle}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
+                  background: confirmDialog.newStatus === 'Cancelado' || confirmDialog.newStatus === 'AnularVenta' ? 'rgba(239, 68, 68, 0.15)' :
+                    confirmDialog.newStatus === 'Entregado' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(59, 130, 246, 0.15)'
+                }}>
+                  <AlertTriangle size={24} style={{
+                    color: confirmDialog.newStatus === 'Cancelado' || confirmDialog.newStatus === 'AnularVenta' ? '#ef4444' :
+                      confirmDialog.newStatus === 'Entregado' ? '#22c55e' : '#3b82f6'
+                  }} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
+                    {confirmDialog.newStatus === 'AnularVenta' ? 'Anular Venta' : 'Confirmar cambio de estado'}
+                  </h3>
+                  <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                    Pedido #{confirmDialog.order.id}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm mb-6" style={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                {confirmDialog.message}
+              </p>
+              <div className="flex items-center gap-3 justify-end">
+                <button onClick={() => setConfirmDialog(null)} disabled={updatingStatus}
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all hover:scale-105"
+                  style={{ background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`, color: darkMode ? '#ffffff' : '#1a1a1a' }}>
+                  Cancelar
+                </button>
+                <button onClick={confirmStatusChange} disabled={updatingStatus}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105 flex items-center gap-2"
+                  style={{
+                    background: confirmDialog.newStatus === 'Cancelado' || confirmDialog.newStatus === 'AnularVenta'
+                      ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                      : confirmDialog.newStatus === 'Entregado'
+                        ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                        : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                    color: '#ffffff'
+                  }}>
+                  {updatingStatus && <Loader2 size={16} className="animate-spin" />}
+                  {updatingStatus ? 'Procesando...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Header con botón volver */}
+        <div className="flex items-center gap-4 mb-8">
+          <button onClick={closeOrderDetail}
+            className="w-11 h-11 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+            style={{ background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#d4af37' }}>
+            <ArrowLeft size={20} />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a', fontFamily: "'Playfair Display', serif" }}>
+              Pedido <span style={{ color: '#d4af37' }}>#{selectedOrder.id}</span>
+            </h1>
+            <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+              {selectedOrder.fecha} - {selectedOrder.hora}
+            </p>
+          </div>
+          <StatusBadge status={selectedOrder.estado} />
+        </div>
+
+        {/* Estado + Acciones */}
+        <div className="rounded-2xl p-5 mb-6" style={cardStyle}>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{ background: esEntregado ? 'rgba(34, 197, 94, 0.15)' : esCancelado ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)' }}>
+                {esEntregado ? <CheckCircle size={24} style={{ color: '#22c55e' }} /> :
+                  esCancelado ? <XCircle size={24} style={{ color: '#ef4444' }} /> :
+                    <Clock size={24} style={{ color: '#f59e0b' }} />}
+              </div>
+              <div>
+                <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Estado del pedido</p>
+                <p className="text-lg font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.estado}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              {!esFinal && (
+                <>
+                  {selectedOrder.estado === 'Pendiente' && (
+                    <button onClick={() => handleStatusChange(selectedOrder, 'En Proceso')}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+                      style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color: '#ffffff' }}>
+                      <Truck size={16} /> En Proceso
+                    </button>
+                  )}
+                  <button onClick={() => handleStatusChange(selectedOrder, 'Entregado')}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+                    style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: '#ffffff' }}>
+                    <CheckCircle size={16} /> Marcar Entregado
+                  </button>
+                  <button onClick={() => handleStatusChange(selectedOrder, 'Cancelado')}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+                    style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: '#ffffff' }}>
+                    <Ban size={16} /> Cancelar Pedido
+                  </button>
+                </>
+              )}
+              {esEntregado && ventaActiva && (
+                <button onClick={handleAnularVenta}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444' }}>
+                  <RotateCcw size={16} /> Anular Venta
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Venta asociada (si existe) */}
+        {ventaInfo && (
+          <div className="rounded-2xl p-5 mb-6" style={{
+            ...cardStyle,
+            background: ventaAnulada
+              ? (darkMode ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.04)')
+              : (darkMode ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.04)'),
+            border: `1px solid ${ventaAnulada ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'}`
+          }}>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ background: ventaAnulada ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)' }}>
+                  <Receipt size={24} style={{ color: ventaAnulada ? '#ef4444' : '#22c55e' }} />
+                </div>
+                <div>
+                  <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                    Venta {ventaAnulada ? 'Anulada' : 'Generada'}
+                  </p>
+                  <p className="text-lg font-bold" style={{ color: ventaAnulada ? '#ef4444' : '#22c55e' }}>
+                    {ventaInfo.tipoComprobante} {ventaInfo.numeroComprobante}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <p className="text-xs" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Subtotal</p>
+                  <p className="font-semibold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>S/.{ventaInfo.subtotal?.toFixed(2)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>IGV (18%)</p>
+                  <p className="font-semibold" style={{ color: '#ef4444' }}>S/.{ventaInfo.igv?.toFixed(2)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Total</p>
+                  <p className="text-xl font-bold" style={{ color: '#d4af37' }}>S/.{ventaInfo.total?.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loadingVenta && (
+          <div className="rounded-2xl p-5 mb-6 flex items-center justify-center gap-3" style={cardStyle}>
+            <Loader2 size={20} className="animate-spin" style={{ color: '#d4af37' }} />
+            <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Cargando información de venta...</span>
+          </div>
+        )}
+
+        {/* Grid de info */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Cliente */}
+          <div className="rounded-2xl p-6" style={cardStyle}>
+            <h4 className="font-semibold mb-5 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
+              <User size={16} /> Cliente
+            </h4>
+            <div className="space-y-4">
+              {[
+                { icon: User, label: selectedOrder.cliente },
+                { icon: Mail, label: selectedOrder.correo || 'No registrado' },
+                { icon: Phone, label: selectedOrder.telefono || 'No registrado' },
+                { icon: MapPin, label: selectedOrder.direccion || 'No registrada' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                    <item.icon size={15} style={{ color: '#d4af37' }} />
+                  </div>
+                  <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)', wordBreak: 'break-all' }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Resumen del Pedido */}
+          <div className="rounded-2xl p-6" style={cardStyle}>
+            <h4 className="font-semibold mb-5 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
+              <FileText size={16} /> Resumen
+            </h4>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Método de Pago</span>
+                <span className="flex items-center gap-2 text-sm font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
+                  <CreditCard size={14} style={{ color: '#d4af37' }} /> {selectedOrder.metodoPago}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Productos</span>
+                <span className="text-sm font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.productos?.length || 0} items</span>
+              </div>
+              <div className="pt-3 mt-2" style={{ borderTop: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0,0,0,0.08)'}` }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Subtotal</span>
+                  <span className="text-sm font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>S/.{subtotalPedido.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>IGV (18%)</span>
+                  <span className="text-sm font-medium" style={{ color: '#ef4444' }}>S/.{igvPedido.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2" style={{ borderTop: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0,0,0,0.08)'}` }}>
+                  <span className="font-semibold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>Total</span>
+                  <span className="text-2xl font-bold" style={{ color: '#d4af37' }}>S/.{selectedOrder.total?.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline de estado */}
+          <div className="rounded-2xl p-6" style={cardStyle}>
+            <h4 className="font-semibold mb-5 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
+              <Activity size={16} /> Flujo del Pedido
+            </h4>
+            <div className="space-y-4">
+              {[
+                { estado: 'Pendiente', icon: Clock, color: '#f59e0b' },
+                { estado: 'En Proceso', icon: Truck, color: '#3b82f6' },
+                { estado: 'Entregado', icon: CheckCircle, color: '#22c55e' },
+              ].map((step, i) => {
+                const estados = ['Pendiente', 'En Proceso', 'Entregado'];
+                const currentIdx = estados.indexOf(selectedOrder.estado);
+                const stepIdx = estados.indexOf(step.estado);
+                const isActive = stepIdx <= currentIdx && !esCancelado;
+                const isCurrent = step.estado === selectedOrder.estado;
+                return (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{
+                      background: isActive ? `${step.color}25` : darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                      border: isCurrent ? `2px solid ${step.color}` : '2px solid transparent'
+                    }}>
+                      <step.icon size={18} style={{ color: isActive ? step.color : (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: isActive ? (darkMode ? '#ffffff' : '#1a1a1a') : (darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') }}>
+                        {step.estado}
+                      </p>
+                    </div>
+                    {isActive && <CheckCircle size={16} style={{ color: step.color }} />}
+                  </div>
+                );
+              })}
+              {esCancelado && (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(239, 68, 68, 0.15)', border: '2px solid #ef4444' }}>
+                    <XCircle size={18} style={{ color: '#ef4444' }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium" style={{ color: '#ef4444' }}>Cancelado</p>
+                  </div>
+                  <XCircle size={16} style={{ color: '#ef4444' }} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Productos */}
+        <div className="rounded-2xl p-6" style={cardStyle}>
+          <h4 className="font-semibold mb-5 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
+            <Package size={16} /> Productos del Pedido ({selectedOrder.productos?.length || 0})
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {selectedOrder.productos?.map((producto, index) => (
+              <div key={index} className="flex items-center gap-4 p-4 rounded-xl" style={{
+                background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+              }}>
+                <img
+                  src={producto.imagenes?.[0] || ''}
+                  alt={producto.nombre}
+                  className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+                  style={{ border: '1px solid rgba(212, 175, 55, 0.2)' }}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm mb-1 truncate" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{producto.nombre}</p>
+                  <p className="text-xs" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                    S/.{Number(producto.precio || 0).toFixed(2)} x {producto.cantidad} und.
+                  </p>
+                  <p className="font-bold text-sm mt-1" style={{ color: '#d4af37' }}>
+                    S/.{(Number(producto.precio || 0) * producto.cantidad).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -525,14 +900,6 @@ const Dashboard = ({ darkMode }) => {
           <p className="text-2xl font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
             S/.{stats.totalVentas.toLocaleString()}
           </p>
-          {/* Mini sparkline */}
-          <div className="mt-3 h-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyData}>
-                <Line type="monotone" dataKey="ventas" stroke="#d4af37" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
         </div>
 
         {/* Total Pedidos */}
@@ -561,13 +928,6 @@ const Dashboard = ({ darkMode }) => {
           <p className="text-2xl font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
             {stats.totalPedidos}
           </p>
-          <div className="mt-3 h-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyData}>
-                <Line type="monotone" dataKey="ventas" stroke="#8b5cf6" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
         </div>
 
         {/* Ticket Promedio */}
@@ -593,13 +953,6 @@ const Dashboard = ({ darkMode }) => {
           <p className="text-2xl font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
             S/.{stats.ticketPromedio.toFixed(2)}
           </p>
-          <div className="mt-3 h-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyData}>
-                <Line type="monotone" dataKey="ventas" stroke="#22c55e" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
         </div>
 
         {/* Clientes Activos */}
@@ -625,13 +978,6 @@ const Dashboard = ({ darkMode }) => {
           <p className="text-2xl font-bold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
             {stats.clientesActivos}
           </p>
-          <div className="mt-3 h-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyData}>
-                <Line type="monotone" dataKey="ventas" stroke="#3b82f6" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
         </div>
       </div>
 
@@ -694,11 +1040,11 @@ const Dashboard = ({ darkMode }) => {
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ background: '#d4af37' }}></div>
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>Ventas</span>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>Pedidos</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ background: '#8b5cf6' }}></div>
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>Ingresos</span>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>Ingresos (S/.)</span>
               </div>
             </div>
           </div>
@@ -720,8 +1066,8 @@ const Dashboard = ({ darkMode }) => {
                 <XAxis dataKey="mes" tick={{ fill: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: 12 }} axisLine={{ stroke: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} tickLine={false} />
                 <YAxis tick={{ fill: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: 12 }} axisLine={{ stroke: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(212, 175, 55, 0.2)', strokeWidth: 1, fill: 'transparent' }} />
-                <Area type="monotone" dataKey="ventas" name="Ventas" stroke="#d4af37" strokeWidth={3} fillOpacity={1} fill="url(#colorVentas)" dot={{ fill: '#d4af37', strokeWidth: 2, r: 4, stroke: darkMode ? '#0a0a0a' : '#ffffff' }} />
-                <Area type="monotone" dataKey="ingresos" name="Ingresos" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorIngresos)" dot={false} />
+                <Area type="monotone" dataKey="pedidos" name="Pedidos" stroke="#d4af37" strokeWidth={3} fillOpacity={1} fill="url(#colorVentas)" dot={{ fill: '#d4af37', strokeWidth: 2, r: 4, stroke: darkMode ? '#0a0a0a' : '#ffffff' }} />
+                <Area type="monotone" dataKey="ingresos" name="Ingresos (S/.)" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorIngresos)" dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -786,54 +1132,6 @@ const Dashboard = ({ darkMode }) => {
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Weekly Bar Chart */}
-        <div className="rounded-2xl p-6" style={cardStyle}>
-          <h3 className="text-lg font-semibold mb-2" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-            Ventas Semanales
-          </h3>
-          <p className="text-sm mb-4" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-            Distribución por día
-          </p>
-          <div style={{ height: '200px', width: '100%', minWidth: '0' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} vertical={false} />
-                <XAxis dataKey="dia" tick={{ fill: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis hide />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                <Bar dataKey="ventas" name="Ventas" radius={[6, 6, 0, 0]} fill="#d4af37" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Hourly Chart */}
-        <div className="rounded-2xl p-6" style={cardStyle}>
-          <h3 className="text-lg font-semibold mb-2" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-            Horarios Pico
-          </h3>
-          <p className="text-sm mb-4" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-            Pedidos por hora
-          </p>
-          <div style={{ height: '200px', width: '100%', minWidth: '0' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={hourlyData}>
-                <defs>
-                  <linearGradient id="colorHora" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} vertical={false} />
-                <XAxis dataKey="hora" tick={{ fill: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis hide />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(139, 92, 246, 0.2)', fill: 'transparent' }} />
-                <Area type="monotone" dataKey="pedidos" name="Pedidos" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorHora)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
         {/* Pie Chart */}
         <div className="rounded-2xl p-6" style={cardStyle}>
           <h3 className="text-lg font-semibold mb-2" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
@@ -865,10 +1163,90 @@ const Dashboard = ({ darkMode }) => {
             ))}
           </div>
         </div>
+
+        {/* IGV Acumulado Chart */}
+        <div className="lg:col-span-2 rounded-2xl p-6" style={cardStyle}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-semibold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
+                IGV Acumulado
+              </h3>
+              <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                Impuesto acumulado por mes (18%)
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ background: '#ef4444' }}></div>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>IGV Mensual</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ background: '#f59e0b' }}></div>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>IGV Acumulado</span>
+              </div>
+            </div>
+          </div>
+
+          {(() => {
+            let acumulado = 0;
+            const igvData = chartData.map(d => {
+              acumulado += d.igv || 0;
+              return { mes: d.mes, igvMensual: d.igv || 0, igvAcumulado: parseFloat(acumulado.toFixed(2)) };
+            });
+            const totalIgv = acumulado;
+
+            return (
+              <>
+                <div className="flex items-center gap-6 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(239, 68, 68, 0.15)' }}>
+                      <DollarSign size={20} style={{ color: '#ef4444' }} />
+                    </div>
+                    <div>
+                      <p className="text-xs" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>IGV Total Acumulado</p>
+                      <p className="text-lg font-bold" style={{ color: '#ef4444' }}>S/.{totalIgv.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ height: '220px', width: '100%', minWidth: '0' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={igvData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorIgvBar" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0.3} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} vertical={false} />
+                      <XAxis dataKey="mes" tick={{ fill: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: 12 }} axisLine={{ stroke: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} tickLine={false} />
+                      <YAxis tick={{ fill: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: 12 }} axisLine={{ stroke: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} tickLine={false} />
+                      <Tooltip
+                        cursor={{ fill: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }}
+                        contentStyle={{
+                          background: darkMode ? 'rgba(20, 20, 20, 0.95)' : '#ffffff',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '12px',
+                          padding: '12px 16px',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+                        }}
+                        formatter={(value, name) => [`S/.${Number(value).toFixed(2)}`, name === 'igvMensual' ? 'IGV Mensual' : 'IGV Acumulado']}
+                        labelStyle={{ color: '#ef4444', fontWeight: '600', marginBottom: '4px' }}
+                        itemStyle={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}
+                      />
+                      <Bar dataKey="igvMensual" name="igvMensual" fill="url(#colorIgvBar)" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                      <Line type="monotone" dataKey="igvAcumulado" name="igvAcumulado" stroke="#f59e0b" strokeWidth={2.5} dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4, stroke: darkMode ? '#0a0a0a' : '#ffffff' }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </>
+            );
+          })()}
+        </div>
       </div>
 
-      {/* Activity & Alerts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {/* Activity Row */}
+      <div className="grid grid-cols-1 gap-6 mb-8">
         {/* Recent Activity */}
         <div className="rounded-2xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between mb-6">
@@ -916,82 +1294,6 @@ const Dashboard = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Alerts & Notifications */}
-        <div className="rounded-2xl p-6" style={cardStyle}>
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(245, 158, 11, 0.15)' }}>
-                <Bell size={20} style={{ color: '#f59e0b' }} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-                  Alertas
-                </h3>
-                <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                  Notificaciones importantes
-                </p>
-              </div>
-            </div>
-            {alerts.length > 0 && (
-              <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: '#ef4444', color: '#ffffff' }}>
-                {alerts.length}
-              </span>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            {alerts.length === 0 ? (
-              <div className="text-center py-8">
-                <CheckCircle size={40} style={{ color: '#22c55e', margin: '0 auto 12px' }} />
-                <p className="font-medium" style={{ color: '#22c55e' }}>¡Todo en orden!</p>
-                <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No hay alertas pendientes</p>
-              </div>
-            ) : (
-              alerts.map((alert, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 p-4 rounded-xl"
-                  style={{
-                    background: `${alert.color}10`,
-                    border: `1px solid ${alert.color}30`
-                  }}
-                >
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${alert.color}20` }}>
-                    <alert.icon size={18} style={{ color: alert.color }} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm" style={{ color: alert.color }}>
-                      {alert.title}
-                    </p>
-                    <p className="text-xs mt-1" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
-                      {alert.description}
-                    </p>
-                  </div>
-                  <button className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ background: alert.color, color: '#ffffff' }}>
-                    Ver
-                  </button>
-                </div>
-              ))
-            )}
-
-            {/* Quick Actions */}
-            <div className="pt-4 mt-4" style={{ borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-              <p className="text-xs uppercase tracking-wide mb-3" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                Acciones rápidas
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <button className="flex items-center gap-2 p-3 rounded-xl transition-all hover:scale-105" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-                  <ShoppingBag size={16} style={{ color: '#d4af37' }} />
-                  <span className="text-sm" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>Nuevo pedido</span>
-                </button>
-                <button className="flex items-center gap-2 p-3 rounded-xl transition-all hover:scale-105" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-                  <Package size={16} style={{ color: '#8b5cf6' }} />
-                  <span className="text-sm" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>Agregar producto</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Orders Table */}
@@ -1147,160 +1449,6 @@ const Dashboard = ({ darkMode }) => {
         )}
       </div>
 
-      {/* Order Detail Inline */}
-      {selectedOrder && (
-        <div className="rounded-2xl mt-6 overflow-hidden" style={cardStyle}>
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 lg:px-8 py-5" style={{
-            background: darkMode
-              ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%)'
-              : 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%)',
-            borderBottom: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0,0,0,0.1)'}`
-          }}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{
-                background: 'linear-gradient(135deg, #d4af37 0%, #b8960c 100%)',
-                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
-              }}>
-                <ShoppingCart size={22} style={{ color: '#0a0a0a' }} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold m-0" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-                  Detalles del Pedido <span style={{ color: '#d4af37' }}>#{selectedOrder.id}</span>
-                </h3>
-                <p className="text-sm m-0 mt-1" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                  {selectedOrder.fecha} - {selectedOrder.hora}
-                </p>
-              </div>
-            </div>
-            <button onClick={closeOrderDetail} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105" style={{
-              background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-              border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
-            }}>
-              <X size={20} style={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }} />
-            </button>
-          </div>
-
-          <div className="px-6 lg:px-8 py-6">
-            {/* Info Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-              {/* Cliente */}
-              <div className="p-5 rounded-2xl" style={{
-                background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-              }}>
-                <h4 className="font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
-                  <User size={16} /> Cliente
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                      <User size={14} style={{ color: '#d4af37' }} />
-                    </div>
-                    <span className="text-sm" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.cliente}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                      <Mail size={14} style={{ color: '#d4af37' }} />
-                    </div>
-                    <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)', wordBreak: 'break-all' }}>{selectedOrder.correo || 'No registrado'}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                      <Phone size={14} style={{ color: '#d4af37' }} />
-                    </div>
-                    <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>{selectedOrder.telefono || 'No registrado'}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                      <MapPin size={14} style={{ color: '#d4af37' }} />
-                    </div>
-                    <span className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>{selectedOrder.direccion || 'No registrada'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pedido */}
-              <div className="p-5 rounded-2xl" style={{
-                background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-              }}>
-                <h4 className="font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
-                  <ShoppingCart size={16} /> Pedido
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm flex-shrink-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Método de Pago</span>
-                    <span className="flex items-center gap-2 text-sm font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>
-                      <CreditCard size={14} className="flex-shrink-0" style={{ color: '#d4af37' }} /> {selectedOrder.metodoPago}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm flex-shrink-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Estado</span>
-                    <StatusBadge status={selectedOrder.estado} />
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm flex-shrink-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Productos</span>
-                    <span className="text-sm font-medium" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{selectedOrder.productos?.length || 0}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 pt-3 mt-1" style={{ borderTop: `1px solid ${darkMode ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0,0,0,0.08)'}` }}>
-                    <span className="font-semibold text-sm flex-shrink-0" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>Total</span>
-                    <span className="text-2xl font-bold" style={{ color: '#d4af37' }}>S/.{selectedOrder.total?.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Productos */}
-              <div className="p-5 rounded-2xl md:col-span-2 lg:col-span-1" style={{
-                background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-              }}>
-                <h4 className="font-semibold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: '#d4af37' }}>
-                  <Package size={16} /> Productos ({selectedOrder.productos?.length || 0})
-                </h4>
-                <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
-                  {selectedOrder.productos?.map((producto, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 rounded-xl" style={{
-                      background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`
-                    }}>
-                      <img
-                        src={producto.imagenes?.[0] || ''}
-                        alt={producto.nombre}
-                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                        style={{ border: '1px solid rgba(212, 175, 55, 0.2)' }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm mb-1 truncate" style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}>{producto.nombre}</p>
-                        <p className="text-xs m-0" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                          S/.{Number(producto.precio || 0).toFixed(2)} x {producto.cantidad} und.
-                        </p>
-                      </div>
-                      <p className="font-bold m-0 flex-shrink-0" style={{ color: '#d4af37' }}>
-                        S/.{(Number(producto.precio || 0) * producto.cantidad).toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-6 lg:px-8 py-4 flex justify-end" style={{
-            background: darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.02)',
-            borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`
-          }}>
-            <button onClick={closeOrderDetail} className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all hover:scale-105" style={{
-              background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-              border: `1px solid ${darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
-              color: darkMode ? '#ffffff' : '#1a1a1a'
-            }}>
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

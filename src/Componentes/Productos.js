@@ -50,6 +50,7 @@ const Productos = ({ darkMode }) => {
   const [proveedores, setProveedores] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     const fetchProductos = () => {
@@ -63,6 +64,8 @@ const Productos = ({ darkMode }) => {
             proveedor: producto.nombreProveedor || "Desconocido",
             categorias: producto.nombreCategoria || "Sin categoria",
             stock: producto.stockActual || 0,
+            stockMinimo: producto.stockMinimo || 0,
+            stockMaximo: producto.stockMaximo || 0,
             estado: producto.estado || "Desconocido",
           }));
           setProductos(productosMapeados);
@@ -139,27 +142,96 @@ const Productos = ({ darkMode }) => {
     }
   };
 
+  const handleEdit = (producto) => {
+    setEditingId(producto.id);
+
+    // Traer imágenes del producto desde /listar
+    api.get('/api/producto/listar')
+      .then(response => {
+        const prodCompleto = response.data.find(p => p.idProducto === producto.id);
+        const imagenes = prodCompleto?.imagenes || [];
+
+        setNuevoProducto({
+          id: producto.id,
+          nombre: producto.nombre,
+          descripcion: producto.descripcion || '',
+          precio: producto.precio,
+          imagen: imagenes[0]?.imagen?.url || null,
+          imagenFile: null,
+          imagenExtra1: imagenes[1]?.imagen?.url || null,
+          imagenFileExtra1: null,
+          imagenExtra2: imagenes[2]?.imagen?.url || null,
+          imagenFileExtra2: null,
+          proveedor: producto.proveedor,
+          stockMinimo: producto.stockMinimo || '',
+          stockMaximo: producto.stockMaximo || '',
+          stock: producto.stock,
+          estado: producto.estado,
+          categorias: producto.categorias,
+        });
+      })
+      .catch(() => {
+        setNuevoProducto({
+          id: producto.id,
+          nombre: producto.nombre,
+          descripcion: producto.descripcion || '',
+          precio: producto.precio,
+          imagen: null,
+          imagenFile: null,
+          imagenExtra1: null,
+          imagenFileExtra1: null,
+          imagenExtra2: null,
+          imagenFileExtra2: null,
+          proveedor: producto.proveedor,
+          stockMinimo: producto.stockMinimo || '',
+          stockMaximo: producto.stockMaximo || '',
+          stock: producto.stock,
+          estado: producto.estado,
+          categorias: producto.categorias,
+        });
+      });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setNuevoProducto({
+      id: '',
+      nombre: '',
+      descripcion: '',
+      precio: '',
+      imagen: null,
+      imagenFile: null,
+      imagenExtra1: null,
+      imagenFileExtra1: null,
+      imagenExtra2: null,
+      imagenFileExtra2: null,
+      proveedor: '',
+      stock: '',
+      stockMinimo: '',
+      stockMaximo: '',
+      estado: 'activo',
+      categorias: '',
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (isSubmitting) return;
 
-    if (
-      nuevoProducto.nombre &&
-      nuevoProducto.precio &&
-      nuevoProducto.imagenFile &&
-      nuevoProducto.proveedor &&
-      nuevoProducto.categorias &&
-      nuevoProducto.stock &&
-      nuevoProducto.stockMinimo &&
-      nuevoProducto.stockMaximo
-    ) {
+    const requiredFields = editingId
+      ? nuevoProducto.nombre && nuevoProducto.precio && nuevoProducto.proveedor && nuevoProducto.categorias && nuevoProducto.stock
+      : nuevoProducto.nombre && nuevoProducto.precio && nuevoProducto.imagenFile && nuevoProducto.proveedor && nuevoProducto.categorias && nuevoProducto.stock && nuevoProducto.stockMinimo && nuevoProducto.stockMaximo;
+
+    if (requiredFields) {
       setIsSubmitting(true);
       const productoAEnviar = {
         nombre: nuevoProducto.nombre,
         descripcion: nuevoProducto.descripcion || "Descripcion del producto",
         precio: parseFloat(nuevoProducto.precio),
-        estado: "Disponible",
+        estado: nuevoProducto.estado || "Disponible",
         stockMinimo: parseInt(nuevoProducto.stockMinimo),
         stockMaximo: parseInt(nuevoProducto.stockMaximo),
         stockActual: parseInt(nuevoProducto.stock),
@@ -184,15 +256,14 @@ const Productos = ({ darkMode }) => {
         formData.append('imagenes', nuevoProducto.imagenFileExtra2);
       }
 
-      console.log("Producto JSON:", JSON.stringify(productoAEnviar));
-      console.log("Imagen:", nuevoProducto.imagenFile?.name);
+      const request = editingId
+        ? api.put(`/api/producto/actualizar/${editingId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        : api.post("/api/producto/registrar", formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 
-      api.post("/api/producto/registrar", formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      request
         .then(response => {
-          const nuevoProductoConID = {
-            id: response.data.idProducto || response.data.id,
+          const prodResponse = {
+            id: response.data.idProducto || response.data.id || editingId,
             nombre: response.data.nombre || "Sin nombre",
             descripcion: response.data.descripcion || "Sin descripcion",
             precio: response.data.precio || 0,
@@ -202,30 +273,17 @@ const Productos = ({ darkMode }) => {
             estado: response.data.estado || "Disponible",
           };
 
-          setProductos((prev) => [...prev, nuevoProductoConID]);
+          if (editingId) {
+            setProductos((prev) => prev.map(p => p.id === editingId ? prodResponse : p));
+          } else {
+            setProductos((prev) => [...prev, prodResponse]);
+          }
 
-          setNuevoProducto({
-            nombre: '',
-            descripcion: '',
-            precio: '',
-            imagen: null,
-            imagenFile: null,
-            imagenExtra1: null,
-            imagenFileExtra1: null,
-            imagenExtra2: null,
-            imagenFileExtra2: null,
-            proveedor: '',
-            stock: '',
-            stockMinimo: '',
-            stockMaximo: '',
-            estado: 'activo',
-            categorias: '',
-          });
-
+          resetForm();
           setIsSubmitting(false);
         })
         .catch(error => {
-          console.error("Error al registrar el producto:", error);
+          console.error(editingId ? "Error al actualizar el producto:" : "Error al registrar el producto:", error);
           console.error("Respuesta del servidor:", error.response?.data);
           setIsSubmitting(false);
         });
@@ -466,10 +524,10 @@ const Productos = ({ darkMode }) => {
                 className="text-lg font-semibold"
                 style={{ color: darkMode ? '#ffffff' : '#1a1a1a' }}
               >
-                Agregar Nuevo Producto
+                {editingId ? 'Editar Producto' : 'Agregar Nuevo Producto'}
               </h2>
               <p className="text-sm" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                Complete los campos para registrar un producto
+                {editingId ? 'Modifique los campos del producto' : 'Complete los campos para registrar un producto'}
               </p>
             </div>
           </div>
@@ -687,7 +745,7 @@ const Productos = ({ darkMode }) => {
                     accept="image/*"
                     onChange={handleImageChange}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    required
+                    required={!editingId}
                   />
                   <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                     {nuevoProducto.imagen ? (
@@ -797,15 +855,28 @@ const Productos = ({ darkMode }) => {
               {isSubmitting ? (
                 <>
                   <div className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
-                  Registrando...
+                  {editingId ? 'Actualizando...' : 'Registrando...'}
                 </>
               ) : (
                 <>
-                  <Plus size={20} />
-                  Registrar Producto
+                  {editingId ? <Edit3 size={20} /> : <Plus size={20} />}
+                  {editingId ? 'Actualizar Producto' : 'Registrar Producto'}
                 </>
               )}
             </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all mt-2"
+                style={{
+                  background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                  color: darkMode ? '#ffffff' : '#1a1a1a',
+                }}
+              >
+                Cancelar Edición
+              </button>
+            )}
           </form>
         </div>
 
@@ -977,6 +1048,7 @@ const Productos = ({ darkMode }) => {
                           color: '#d4af37'
                         }}
                         title="Editar"
+                        onClick={() => handleEdit(producto)}
                       >
                         <Edit3 size={16} />
                       </button>
